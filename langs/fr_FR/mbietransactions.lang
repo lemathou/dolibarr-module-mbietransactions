@@ -1,0 +1,116 @@
+# Copyright (C) 2020      	MB Informatique      	<info@mb-informatique.fr>
+# Copyright (C) 2022        Mathieu Moulin          <contact@iprospective.fr>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+# Générique
+#
+# Module label 'ModuleMBIETransactionsName'
+ModuleMBIETransactionsName = Règlements ETransactions
+# Module description 'ModuleMBIETransactionsDesc'
+ModuleMBIETransactionsDesc = Module de paiement en ligne avec la solution de paiement <a href="https://www.ca-moncommerce.com/encaisser-sur-internet-avec-e-transactions/" target="_blank">ETransactions</a>
+
+#
+# Page d'administration
+#
+MBIETransactionsSetup = Configuration du module MBI ETransactions
+Settings = Réglages
+MBIETransactionsSetupPage = Page de configuration du module MBI ETransactions
+
+MBIETRANSACTIONS_TEST = Mode Test
+MBIETRANSACTIONS_TEST_RANK = Numéro de rang en mode Test
+MBIETRANSACTIONS_TEST_ID = Identifiant E-Transactions/Paybox en mode Test
+MBIETRANSACTIONS_TEST_SHOP_ID = Numéro de site en mode Test
+MBIETRANSACTIONS_TEST_KEY = Clé publique en mode Test
+MBIETRANSACTIONS_RANK = Numéro de rang
+MBIETRANSACTIONS_ID = Identifiant E-Transactions/Paybox
+MBIETRANSACTIONS_SHOP_ID = Numéro de site
+MBIETRANSACTIONS_KEY = Clé publique
+
+MBIETRANSACTIONS_DELIVERY_RECEIPT_EMAIL = Accusé de réception
+MBIETRANSACTIONS_CC_EMAILS = Adresses en copie des emails
+MBIETRANSACTIONS_CC_EMAILSTooltip = Séparées par une virgule
+MBIETRANSACTIONS_NOTIFICATION_FROM_EMAIL = Email expéditeur des notifications
+MBIETRANSACTIONS_NOTIFICATION_EMAIL = Email de réception des notifications
+MBIETRANSACTIONS_WEBSITE_CONTACT_URL = URL de contact sur le site web
+MBIETRANSACTIONS_BANK_ACCOUNT = Compte bancaire à créditer
+MBIETRANSACTIONS_TEMPLATE_PAYMENT_MAIL = Modèle du mail de paiement
+MBIETRANSACTIONS_TEMPLATE_PAYMENT_MAIL_DEFAULT = Bonjour __THIRDPARTY_NAME__,<br>vous pouvez cliquer sur le lien sécurisé ci-dessous pour effectuer le règlement de votre facture __REF__ à destination de SOCIETE via notre interface de paiement bancaire.<br>{URL}<br>Image de sécurité : Vous pouvez faire confiance à ce mail si votre numéro de téléphone apparait ci-dessous.<br>{IMG}<br>Cordialement, SOCIETE
+MBIETRANSACTIONS_TEMPLATE_PAYMENT_MAILTooltip = Modèle du mail envoyé après avoir envoyé la facture. Les variables {URL} (Lien de paiement) et {IMG} (Image de confiance avec le numéro de téléphone du client) peuvent être utilisées en plus des autres variables de substitution
+MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAIL = Modèle du mail de la facture acquitée
+MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAIL_DEFAULT = Bonjour __THIRDPARTY_NAME__, <br>nous vous remercions pour votre paiement et vous indiquons qu\'il ne reste plus rien à payer sur la facture __REF__.
+MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAILTooltip = Modèle du mail envoyé quand la facture est payée
+MBIETRANSACTIONS_SUBJECT_PAYMENT_MAIL = Sujet du mail de paiement
+MBIETRANSACTIONS_SUBJECT_PAID_INVOICE_MAIL = Sujet du mail avec facture acquitée
+
+#
+# Page À propos
+#
+About = À propos
+MBIETransactionsAbout = À propos de MBI ETransactions
+MBIETransactionsAboutPage = Page à propos de MBI ETransactions
+
+#
+# Hooks
+#
+MBIETransactionsPaymentButton = Paiement Etransactions
+
+#
+# Pages de paiement
+#
+MBIETransactionsPaymentPageTitle = Formulaire de paiement
+MBIETransactionsPaymentPageH1 = Service de paiement en ligne sécurisé
+MBIETransactionsPaymentAccepted = Le paiement a été accepté.
+MBIETransactionsPaymentAccepted2 = vous en remercie.
+MBIETransactionsPaymentAccepted3 = Un email de confirmation vous a été envoyé, merci de le conserver précieusement.
+MBIETransactionsPaymentCanceled = Le paiement a été annulé. Vous pouvez à tout moment cliquer de nouveau sur lien de règlement contenu dans l'email pour accéder au règlement de votre facture.
+MBIETransactionsPaymentRefused = Nous sommes désolés mais le paiement a été refusé. Nous vous invitons à réitérer le processus de règlement à partir du lien contenu dans l'email de règlement.
+MBIETransactionsPaymentRefused2 = Si le problème persiste, merci de nous contacter à l'adresse email
+MBIETransactionsPaymentRefused3 = en nous indiquant la référence de la facture.
+MBIETransactionsErrorConfig = Nous sommes désolés mais il y a un problème dans la configuration du service de paiement, merci de nous contacter à l'adresse email
+MBIETransactionsErrorConfigAlreadyPaid = Le paiement a été accepté. Nous vous en remercions. Un email de confirmation vous a été envoyé, merci de le conserver précieusement.
+MBIETransactionsPaymentRecapTitle = Cet écran vous permet de réaliser votre paiement en ligne à destination de
+MBIETransactionsPaymentRecapVerify = Merci de vérifier que ces informations sont correctes puis cliquer sur le bouton 'Continuer' pour être connecté sur le serveur sécurisé de paiement bancaire.
+MBIETransactionsPaymentRecapVerify2 = En cas d'erreur, vous pouvez envoyer un email à l'adresse
+MBIETransactionsPaymentRecapVerify3 = en spécifiant la référence de votre facture.
+MBIETransactionsPaymentRecapInfos = Voici les informations sur le paiement à réaliser :
+MBIETransactionsPaymentRecapRecipient = Bénéficiaire :
+MBIETransactionsPaymentRecapInvoiceRef = Référence facture :
+MBIETransactionsPaymentRecapTransactionRef = Référence de la transaction :
+MBIETransactionsPaymentRecapName = Votre nom :
+MBIETransactionsPaymentRecapEmail = Votre adresse email :
+MBIETransactionsPaymentRecapInvoiceAmount = Montant total de la facture :
+MBIETransactionsPaymentRecapAlreadypaid = Somme déjà perçue :
+MBIETransactionsPaymentRecapAdvance = Acompte demandé pour valider la commande :
+MBIETransactionsPaymentRecapPaymentAmount = Montant total du règlement :
+MBIETransactionsPaymentLink = Lien de paiement
+MBIETransactionsAcompte = Acompte (pourcentage)
+MBIETransactionsAcompteVal = Acompte (valeur)
+MBIETransactionsTrustImage = Image de confiance
+MBIETransactionsAdvanceAmountTTC = Montant de l'acompte TTC
+MBIETransactionsMailTitlePaidInvoice = Facture __REF__ acquittée
+MBIETransactionsMailTitlePaymentLink = Lien pour le règlement de la facture __REF__
+MBIETransactionsPaymentPageContinue = Continuer
+MBIETransactionsPaymentPageDeadline = Échéance
+MBIETransactionsPaymentMultiple = Paiement en x fois
+
+#
+# Pages de paiement Standard
+#
+MBIETransactionsDoPayment = Payer par Carte
+MBIETransactionsDoPaymentAcompte = Acompte %s par Carte
+MBIETransactionsDoPaymentMultiple = Payer en %s fois par Carte
+MBIETransactionsDoPaymentTransfer = Payer par virement bancaire
+MBIETransactionsDoPaymentCheque = Payer par chèque

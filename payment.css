@@ -1,0 +1,52 @@
+div.buttonpayment {
+    min-height: 60px;
+    height: auto;
+    background-color: transparent;
+    border: 2px solid #068d95;
+    color: black;
+    padding: 0;
+    max-width: 367px;
+    margin-left: 3px;
+}
+div.buttonpayment input {
+    background-color: #068d95;
+    margin: 0 -0 10px 0;
+    padding: 5px;
+    width: 100%;
+}
+div.buttonpayment input:hover {
+    margin: 0 -0 10px 0;
+}
+
+div.buttonpayment .fa {
+    background-color: #068d95;
+}
+
+div.buttonpayment .buttonpaymentsmall img {
+    height: 31px;
+    padding: 0 8px 14px 8px;
+}
+
+div.buttonpayment .buttonpaymentsmall img.img_paypal {
+    height: 45px;
+    padding-bottom: 0;
+}
+
+div.buttonpayment .pay_infos {
+    padding: 0 10px 5px 10px;
+}
+
+div.buttonpayment .small {
+    font-size: 0.9em;
+    text-decoration: underline;
+}
+
+div.voile {
+    opacity: 0.75;
+    position: absolute;
+    margin-top: 0px;
+    left:0;
+    right:0;
+    height:1300px;
+    background-color: white;
+}

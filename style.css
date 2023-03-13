@@ -1,0 +1,89 @@
+body {
+	width : 80%;
+	margin: auto;
+	text-align : center;
+}
+
+h1 {
+	margin-top: 0;
+	background:#888;
+	height: 29px;
+	text-shadow: 1px 1px 1px #444;
+	-moz-box-shadow: inset 1px 1px 0px 0px #888;
+	-webkit-box-shadow: inset 1px 1px 0px 0px #888;
+	box-shadow: inset 1px 1px 0px 0px #888;
+	color: #EEE;
+	font-weight: bold;
+	height: 35px;
+	line-height: 35px;
+	padding: 0 25px;
+	border-width: 0 0 1px 0;
+	border-style: solid;
+	border-color: #CCC;
+	font-size: 1.2em;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+tr.liste_total td {
+	color: #000;
+	font-weight:bold;
+}
+
+.button {
+	color: #000;
+	font-weight:bold;
+	font-size:0.86em;
+	margin: 10px 0 10px 0;
+}
+
+#logo{
+	width : 100%;
+	margin : 30px 0px 30px 0px;
+}
+
+#payment-content{
+	width : 100%;
+	text-align : left;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #CCC;
+	background: #F5F5F5;
+	border-bottom: 1px solid #CCC;
+	margin: 0;
+	padding: 10px 10px;
+	font-size:0.86em;
+}
+
+#payment-table{
+	width : 100%;
+	text-align : left;
+	border : 1px solid #ccc;
+}
+
+#payment-table tr{
+	width : 100%;
+}
+
+.liste_total{
+	text-align : left;
+}
+
+.payment-row-left{
+	width : 40%;
+	text-align : left;
+
+}
+
+.payment-row-right{
+	width : 60%;
+	text-align : right;
+}
+
+.payment-button{
+	text-align : right;
+}

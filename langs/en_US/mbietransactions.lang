@@ -1,0 +1,103 @@
+# Copyright (C) 2020      	MB Informatique      	<info@mb-informatique.fr>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+# Generic
+#
+# Module label 'ModuleMBIETransactionsName'
+ModuleMBIETransactionsName = MBI ETransactions
+# Module description 'ModuleMBIETransactionsDesc'
+ModuleMBIETransactionsDesc = MBI ETransactions description
+
+#
+# Admin page
+#
+MBIETransactionsSetup = MBI ETransactions setup
+Settings = Settings
+MBIETransactionsSetupPage = MBI ETransactions setup page
+MBIETRANSACTIONS_TEST = Test mode
+MBIETRANSACTIONS_RANK = Rank number
+MBIETRANSACTIONS_ID = E-Transactions/Paybox ID
+MBIETRANSACTIONS_SHOP_ID = Shop ID
+MBIETRANSACTIONS_KEY = Public key
+MBIETRANSACTIONS_DELIVERY_RECEIPT_EMAIL = Delivery receipt
+MBIETRANSACTIONS_CC_EMAILS = CC email addresses
+MBIETRANSACTIONS_CC_EMAILSTooltip = Comma separated
+MBIETRANSACTIONS_BANK_ACCOUNT = Bank account
+MBIETRANSACTIONS_TEMPLATE_PAYMENT_MAIL = Payment mail template
+MBIETRANSACTIONS_TEMPLATE_PAYMENT_MAIL_DEFAULT = Hello __THIRDPARTY_NAME__,<br>you can click on the secure link below to pay your invoice __REF__ to COMPANY via our bank payment interface.<br>{URL}<br>Security picture : You can trust this mail if your phone number is below.<br>{IMG}<br>COMPANY
+MBIETRANSACTIONS_TEMPLATE_PAYMENT_MAILTooltip = Mail template after sending the invoice. The variables {URL} (Payment link), {IMG} (Trust picture with customer phone number) and the other substitution variables can be used
+MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAIL = Paid invoice mail template
+MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAIL_DEFAULT = Hello __THIRDPARTY_NAME__, <br>thank you for your payment, there is nothing more to pay on invoice __REF__.
+MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAILTooltip = Mail template when the invoice is paid
+MBIETRANSACTIONS_SUBJECT_PAYMENT_MAIL = Payment mail subject
+MBIETRANSACTIONS_SUBJECT_PAID_INVOICE_MAIL = Paid invoice mail subject
+
+#
+# About page
+#
+About = About
+MBIETransactionsAbout = About MBIETransactions
+MBIETransactionsAboutPage = MBIETransactions about page
+
+#
+# Hooks
+#
+MBIETransactionsPaymentButton = Internet payment
+
+#
+# Pages de paiement
+#
+MBIETransactionsPaymentPageTitle = Payment Form
+MBIETransactionsPaymentPageH1 = Secured payment service
+MBIETransactionsPaymentAccepted = Accepted payment.
+MBIETransactionsPaymentAccepted2 = thanks you.
+MBIETransactionsPaymentAccepted3 = A confirmation mail has been sent to you, please keep it safe.
+MBIETransactionsPaymentCanceled = Payment canceled. You can always click of the payment link in the email to access your invoice payment.
+MBIETransactionsPaymentRefused = We are sorry, payment refused. We invite you to try again with the payment link in the email.
+MBIETransactionsPaymentRefused2 = If there is problem, please contact us to
+MBIETransactionsPaymentRefused3 = with the invoice reference.
+MBIETransactionsErrorConfig = We are sorry, there is a configuration problem into our payment service, please contact us to
+MBIETransactionsErrorConfigAlreadyPaid = Thank you, the payment was accepted. A confirmation mail has been sent to you, please keep it safe.
+MBIETransactionsPaymentRecapTitle = This screen allows you to make an online payment to
+MBIETransactionsPaymentRecapVerify = Please verify this informations below and click on 'Continue' to be connected to the secured payment server.
+MBIETransactionsPaymentRecapVerify2 = If there is an error, please send a mail to
+MBIETransactionsPaymentRecapVerify3 = with the invoice reference.
+MBIETransactionsPaymentRecapInfos = This is the informations about the payment :
+MBIETransactionsPaymentRecapRecipient = Recipient :
+MBIETransactionsPaymentRecapInvoiceRef = Invoice reference :
+MBIETransactionsPaymentRecapTransactionRef = Transaction reference :
+MBIETransactionsPaymentRecapName = Your name :
+MBIETransactionsPaymentRecapEmail = Your email address :
+MBIETransactionsPaymentRecapInvoiceAmount = Total invoice amount :
+MBIETransactionsPaymentRecapAlreadypaid = Already paid amount :
+MBIETransactionsPaymentRecapAdvance = Asked advance :
+MBIETransactionsPaymentRecapPaymentAmount = Total payment amount :
+MBIETransactionsPaymentLink = Payment link
+MBIETransactionsAcompte = Acompte (pourcentage)
+MBIETransactionsTrustImage = Trust image
+MBIETransactionsAdvanceAmountTTC = Advance amount
+MBIETransactionsMailTitlePaidInvoice = Paid invoice __REF__
+MBIETransactionsMailTitlePaymentLink = Payment link for the invoice __REF__
+MBIETransactionsPaymentPageContinue = Continue
+MBIETransactionsPaymentPageDeadline = Date of payment
+MBIETransactionsPaymentMultiple = Payment in x times
+
+#
+# Pages de paiement Standard
+#
+MBIETransactionsDoPayment = Payer par Carte
+MBIETransactionsDoPaymentAcompte = Acompte %s par Carte
+MBIETransactionsDoPaymentMultiple = Solde par Carte en %s fois
