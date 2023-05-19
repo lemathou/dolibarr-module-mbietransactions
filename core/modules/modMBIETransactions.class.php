@@ -118,15 +118,15 @@ class modMBIETransactions extends DolibarrModules
 		$extrafields = new ExtraFields($this->db);
 
 		// Propal
-		$extrafields->addExtraField('acompte', $langs->trans("MBIETransactionsAcompte"), 'double', 100, "4,2", 'propal', 0, 0, '', 0, true, '', -1, 0);
-		$extrafields->addExtraField('acompte_val', $langs->trans("MBIETransactionsAcompteVal"), 'price', 100, "8,2", 'propal', 0, 0, '', 0, true, '', -1, 0);
+		$extrafields->addExtraField('acompte', $langs->trans("MBIETransactionsAcompte"), 'double', 100, "4,2", 'propal', 0, 0, '', 0, true, '', -1, 0, '', -1, '', '', $conf->entity, 'mbietransactions@mbietransactions', '$conf->mbietransactions->enabled');
+		$extrafields->addExtraField('acompte_val', $langs->trans("MBIETransactionsAcompteVal"), 'price', 100, "8,2", 'propal', 0, 0, '', 0, true, '', -1, 0, '', -1, '', '', $conf->entity, 'mbietransactions@mbietransactions', '$conf->mbietransactions->enabled');
 
 		// Commande
-		$extrafields->addExtraField('acompte', $langs->trans("MBIETransactionsAcompte"), 'double', 100, "4,2", 'commande', 0, 0, '', 0, true, '', -1, 0);
-		$extrafields->addExtraField('acompte_val', $langs->trans("MBIETransactionsAcompteVal"), 'price', 100, "8,2", 'commande', 0, 0, '', 0, true, '', -1, 0);
+		$extrafields->addExtraField('acompte', $langs->trans("MBIETransactionsAcompte"), 'double', 100, "4,2", 'commande', 0, 0, '', 0, true, '', -1, 0, '', -1, '', '', $conf->entity, 'mbietransactions@mbietransactions', '$conf->mbietransactions->enabled');
+		$extrafields->addExtraField('acompte_val', $langs->trans("MBIETransactionsAcompteVal"), 'price', 100, "8,2", 'commande', 0, 0, '', 0, true, '', -1, 0, '', -1, '', '', $conf->entity, 'mbietransactions@mbietransactions', '$conf->mbietransactions->enabled');
 
 		// Facture
-		$extrafields->addExtraField('pay_solde_mult_ok', $langs->trans("MBIETransactionsPaymentSoldeMultOK"), 'boolean', 10, '', 'facture', 0, 0, '', -1, true, '$conf->mbietransactions->enabled && $user->rights->mbietransactions->pay_solde_mult->write', 0, 0);
+		$extrafields->addExtraField('pay_solde_mult_ok', $langs->trans("MBIETransactionsPaymentSoldeMultOK"), 'boolean', 10, '', 'facture', 0, 0, '', -1, 1, '$user->rights->mbietransactions->pay_solde_mult->write', -1, $langs->trans('ExtrafieldToolTip_pay_solde_mult_ok'), '', $conf->entity, 'mbietransactions@mbietransactions', '$conf->mbietransactions->enabled');
 
 		// Permissions
 		$this->remove($options);
