@@ -62,7 +62,7 @@ $extrafields2 = $object->array_options;
 
 // Multiple : total ou solde
 if ($obj->multiple) {
-	$resteapayer = price2num($resteapayer);
+	$resteapayer = price2num($obj->amount ?$obj->amount :$resteapayer);
 	$extrafields2['options_mbi_payment_multiple'] = $obj->multiple;
 }
 // Acompte : d'un coup
@@ -102,6 +102,7 @@ if (!$confError) {
 	
 	$pbx_total = $resteapayer * 100;
 	//var_dump($object); die();
+	//var_dump($pbx_total ); die();
 	$usercode = '';
 
 	$contacts = $object->liste_contact(-1, 'internal');
@@ -135,12 +136,12 @@ if (!$confError) {
 	$pbx_total = str_replace(",", "", $pbx_total);
 	$pbx_total = str_replace(".", "", $pbx_total);
 
-	if ($extrafields2['options_mbi_payment_multiple'] == "2" && empty($extrafields2['options_mbi_payment_deposit'])) {
+	if ($extrafields2['options_mbi_payment_multiple'] == "2") {
 		$total = $resteapayer * 100;
 		$pbx_total = floor($total / 2);
 		$pbx_2mont1 = $total - $pbx_total;
 		$pbx_date1 = date('d/m/Y',strtotime('+1 month'));
-	} else if ($extrafields2['options_mbi_payment_multiple'] == "3" && empty($extrafields2['options_mbi_payment_deposit'])) {
+	} else if ($extrafields2['options_mbi_payment_multiple'] == "3") {
 		$total = $resteapayer * 100;
 		$pbx_total = floor($total / 3);
 		$pbx_2mont1 = $pbx_total;
@@ -198,10 +199,10 @@ if (!$confError) {
 		"&PBX_HASH=SHA512" .
 		"&PBX_TIME=" . $dateTime;
 
-	if ($extrafields2['options_mbi_payment_multiple'] == "2" && empty($extrafields2['options_mbi_payment_deposit'])) {
+	if ($extrafields2['options_mbi_payment_multiple'] == "2") {
 		$msg .= "&PBX_2MONT1=" . $pbx_2mont1;
 		$msg .= "&PBX_DATE1=" . $pbx_date1;
-	} else if ($extrafields2['options_mbi_payment_multiple'] == "3" && empty($extrafields2['options_mbi_payment_deposit'])) {
+	} else if ($extrafields2['options_mbi_payment_multiple'] == "3") {
 		$msg .= "&PBX_2MONT1=" . $pbx_2mont1;
 		$msg .= "&PBX_DATE1=" . $pbx_date1;
 		$msg .= "&PBX_2MONT2=" . $pbx_2mont2;
@@ -226,10 +227,10 @@ if (!$confError) {
 	."<input type='hidden' name='PBX_REFUSE' value='" . $pbx_refuse . "'>"
 	."<input type='hidden' name='PBX_HASH' value='SHA512'>"
 	."<input type='hidden' name='PBX_TIME' value='" . $dateTime . "'>";
-	if ($extrafields2['options_mbi_payment_multiple'] == "2" && empty($extrafields2['options_mbi_payment_deposit'])) {
+	if ($extrafields2['options_mbi_payment_multiple'] == "2") {
 		$form .= "<input type='hidden' name='PBX_2MONT1' value='" . $pbx_2mont1 . "'>";
 		$form .= "<input type='hidden' name='PBX_DATE1' value='" . $pbx_date1 . "'>";
-	} else if ($extrafields2['options_mbi_payment_multiple'] == "3" && empty($extrafields2['options_mbi_payment_deposit'])) {
+	} else if ($extrafields2['options_mbi_payment_multiple'] == "3") {
 		$form .= "<input type='hidden' name='PBX_2MONT1' value='" . $pbx_2mont1 . "'>";
 		$form .= "<input type='hidden' name='PBX_DATE1' value='" . $pbx_date1 . "'>";
 		$form .= "<input type='hidden' name='PBX_2MONT2' value='" . $pbx_2mont2 . "'>";
@@ -279,9 +280,9 @@ if (!$confError) {
 		echo "<tr><td class='payment-row-left'><strong>" . $langs->trans("MBIETransactionsPaymentRecapPaymentAmount") . "</strong></td><td class='payment-row-right'><strong>" . price($pbx_total / 100) . " € TTC</strong></td></tr>";
 	}
 	// Paiement en plusieurs fois
-	if ($extrafields2['options_mbi_payment_multiple'] == "2" && empty($extrafields2['options_mbi_payment_deposit'])) {
+	if ($extrafields2['options_mbi_payment_multiple'] == "2") {
 		echo "<tr><td>" . $langs->trans("MBIETransactionsPaymentPageDeadline") . " : " . price($pbx_2mont1 / 100) . " € TTC - " . $pbx_date1 . "</td></tr>";
-	} else if ($extrafields2['options_mbi_payment_multiple'] == "3" && empty($extrafields2['options_mbi_payment_deposit'])) {
+	} else if ($extrafields2['options_mbi_payment_multiple'] == "3") {
 		echo "<tr><td>" . $langs->trans("MBIETransactionsPaymentPageDeadline") . " : " . price($pbx_2mont1 / 100) . " € TTC - " . $pbx_date1 . "</td></tr>";
 		echo "<tr><td>" . $langs->trans("MBIETransactionsPaymentPageDeadline") . " : " . price($pbx_2mont2 / 100) . " € TTC - " . $pbx_date2 . "</td></tr>";
 	}

@@ -126,6 +126,19 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 		// var_dump($object->array_options['options_acompte']);
 		// var_dump($object->total_ttc);
 
+		// Multiple Reste
+		if (!empty($parameters['amount']) && (!empty($object->array_options['options_pay_solde_mult_ok'])) && ($reste>=300 || ($object->total_ttc>300 && $reste===NULL))) {
+			$multiple = 3;
+			$link_multiple = mmi_etransactions::paymentlink($objecttype, $object->id, $parameters['amount'], $multiple, true);
+			print '<div class="button buttonpayment" id="div_dopayment_mbietransactions_multiple">
+			<input class="" type="submit" id="dopayment_mbietransactions_multiple" name="dopayment_mbietransactions" value="'.$langs->trans("MBIETransactionsDoPaymentMultiple", $multiple).'">';
+			print '<br />';
+			print '<span class="buttonpaymentsmall">
+			<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />
+			<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />
+			</span>';
+			print '</div>';
+		}
 		// Multiple
 		if (empty($parameters['amount']) && ($reste>=300 || ($object->total_ttc>300 && $reste===NULL))) {
 			$multiple = 3;

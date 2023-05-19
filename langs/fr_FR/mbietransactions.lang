@@ -105,6 +105,7 @@ MBIETransactionsMailTitlePaymentLink = Lien pour le règlement de la facture __R
 MBIETransactionsPaymentPageContinue = Continuer
 MBIETransactionsPaymentPageDeadline = Échéance
 MBIETransactionsPaymentMultiple = Paiement en x fois
+MBIETransactionsPaymentSoldeMultOK = Autoriser le x fois sur un reste à payer (éventuellement saisi manuellement)
 
 #
 # Pages de paiement Standard

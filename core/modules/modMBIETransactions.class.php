@@ -39,8 +39,8 @@ class modMBIETransactions extends DolibarrModules
 		$this->description = "MBIETransactionsDescription";
 		$this->descriptionlong = "MBIETransactions description (Long)";
 		$this->editor_name = 'Mathieu Moulin iProspective';
-		$this->editor_url = 'https://www.iprospective.fr';
-		$this->version = '1.0.1';
+		$this->editor_url = 'https://iprospective.fr';
+		$this->version = '1.0.2';
 
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto = 'logo@mbietransactions';
@@ -84,25 +84,13 @@ class modMBIETransactions extends DolibarrModules
 		// Permissions provided by this module
 		$this->rights = array();
 		$r = 0;
-		// Add here entries to declare new permissions
-		/* BEGIN MODULEBUILDER PERMISSIONS */
-		/*
 		$this->rights[$r][0] = $this->numero + $r; // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Read objects of MBIETransactions'; // Permission label
-		$this->rights[$r][4] = 'myobject'; // In php code, permission will be checked by test if ($user->rights->mbietransactions->level1->level2)
-		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->mbietransactions->level1->level2)
-		$r++;
-		$this->rights[$r][0] = $this->numero + $r; // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Create/Update objects of MBIETransactions'; // Permission label
-		$this->rights[$r][4] = 'myobject'; // In php code, permission will be checked by test if ($user->rights->mbietransactions->level1->level2)
+		$this->rights[$r][1] = 'MBIETransactionsPaymentSoldeMultOK'; // Permission label
+		$this->rights[$r][4] = 'pay_solde_mult'; // In php code, permission will be checked by test if ($user->rights->mbietransactions->level1->level2)
 		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->mbietransactions->level1->level2)
 		$r++;
-		$this->rights[$r][0] = $this->numero + $r; // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Delete objects of MBIETransactions'; // Permission label
-		$this->rights[$r][4] = 'myobject'; // In php code, permission will be checked by test if ($user->rights->mbietransactions->level1->level2)
-		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->mbietransactions->level1->level2)
-		$r++;
-		*/
+		// Add here entries to declare new permissions
+		/* BEGIN MODULEBUILDER PERMISSIONS */
 		/* END MODULEBUILDER PERMISSIONS */
 
 		$this->menu = array();
@@ -128,14 +116,17 @@ class modMBIETransactions extends DolibarrModules
 		// Create extrafields during init
 		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 		$extrafields = new ExtraFields($this->db);
+
+		// Propal
 		$extrafields->addExtraField('acompte', $langs->trans("MBIETransactionsAcompte"), 'double', 100, "4,2", 'propal', 0, 0, '', 0, true, '', -1, 0);
 		$extrafields->addExtraField('acompte_val', $langs->trans("MBIETransactionsAcompteVal"), 'price', 100, "8,2", 'propal', 0, 0, '', 0, true, '', -1, 0);
+
+		// Commande
 		$extrafields->addExtraField('acompte', $langs->trans("MBIETransactionsAcompte"), 'double', 100, "4,2", 'commande', 0, 0, '', 0, true, '', -1, 0);
 		$extrafields->addExtraField('acompte_val', $langs->trans("MBIETransactionsAcompteVal"), 'price', 100, "8,2", 'commande', 0, 0, '', 0, true, '', -1, 0);
-		//$extrafields->addExtraField('mbi_payment_link', $langs->trans("MBIETransactionsPaymentLink"), 'text', 100, '2000', 'facture', 0, 0, '', '', 0, '', '1', '', '', $conf->entity, '', '1', 0, 0);
-		//$extrafields->addExtraField('mbi_image_link', $langs->trans("MBIETransactionsTrustImage"), 'text', 100, '2000', 'facture', 0, 0, '', '', 0, '', '1', '', '', $conf->entity, '', '1', 0, 0);
-		//$extrafields->addExtraField('mbi_payment_deposit', $langs->trans("MBIETransactionsAdvanceAmountTTC"), 'varchar', 100, '2000', 'facture', 0, 0, '', '', 1, '', '1', '', '', $conf->entity, '', '1', 0, 0);
-		//$extrafields->addExtraField('mbi_payment_multiple', $langs->trans("MBIETransactionsPaymentMultiple"), 'select', 100, '', 'facture', 0, 0, '', 'a:1:{s:7:"options";a:2:{i:2;s:1:"2";i:3;s:1:"3";}}', 1, '', '1', '', '', $conf->entity, '', '1', 0, 0);
+
+		// Facture
+		$extrafields->addExtraField('pay_solde_mult_ok', $langs->trans("MBIETransactionsPaymentSoldeMultOK"), 'boolean', 10, '', 'facture', 0, 0, '', -1, true, '$conf->mbietransactions->enabled && $user->rights->mbietransactions->pay_solde_mult->write', 0, 0);
 
 		// Permissions
 		$this->remove($options);
