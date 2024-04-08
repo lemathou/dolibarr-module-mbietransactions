@@ -1,6 +1,6 @@
 <?php
 
-dol_include_once('/custom/mmipayments/class/mmi_payments.class.php');
+dol_include_once('/mmipayments/class/mmi_payments.class.php');
 
 class mmi_etransactions
 {
@@ -166,7 +166,7 @@ public static function object_mode_reglement_set($object, $code)
 		//echo $pid;
 		$object->mode_reglement_id = $pid;
 		//var_dump($object);
-		$object->update($user);
+		//$object->update($user);
 	}
 }
 

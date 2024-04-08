@@ -4,8 +4,8 @@
  * Copyright (C) 2022       Mathieu Moulin          <contact@iprospective.fr>
  */
 
-dol_include_once('custom/mmicommon/class/mmi_actions.class.php');
-dol_include_once('/mbietransactions/class/mmi_etransactions.class.php');
+dol_include_once('mmicommon/class/mmi_actions.class.php');
+dol_include_once('mbietransactions/class/mmi_etransactions.class.php');
 
 class ActionsMBIETransactions extends MMI_Actions_1_0
 {
@@ -18,6 +18,7 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 	 */
 	function doCheckStatus($parameters, &$object, &$action, $hookmanager)
 	{
+		$this->doValidatePayment($parameters, $object, $action, $hookmanager);
 		$objecttype = get_class($object);
 
 		if (in_array($objecttype, ['Propal'])) {
@@ -258,9 +259,9 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 	{
 		global $db, $conf, $mysoc, $user;
 		//var_dump($mysoc); die();
-
+		//echo $parameters['paymentmethod'];
 		require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
-
+		
 		if(($client=$object->thirdparty) && $client->email) {
 			$mail_notif_to = [];
 			
@@ -294,7 +295,6 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 		//var_dump($parameters);
 		if ($parameters['paymentmethod']=='transfer' && $conf->global->PAYMENTBYBANKTRANSFER_ID_BANKACCOUNT) {
 			mmi_etransactions::object_mode_reglement_set($object, 'VIR');
-
 			$account = new account($db);
 			$account->fetch($conf->global->PAYMENTBYBANKTRANSFER_ID_BANKACCOUNT);
 			//var_dump($account);
