@@ -155,7 +155,12 @@ if (!$confError) {
 	$pbx_refuse = dol_buildpath($path . '/mbietransactions/refused.php', 2);
 	$pbx_repondre_a = str_replace('http:', 'https:', dol_buildpath($path . '/mbietransactions/retour.php', 2));
 	$pbx_retour = 'Mt:M;Ref:R;Auto:A;Erreur:E;Trans:T';
-
+	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.$object->thirdparty->name.'</FirstName><LastName>'.$object->thirdparty->name.'</LastName><Address1>'.$object->thirdparty->address.'</Address1><ZipCode>'.$object->thirdparty->zip.'</ZipCode><City>'.$object->thirdparty->town.'</City><CountryCode>'.$object->thirdparty->country_code.'</CountryCode><CountryCodeMobilePhone>+33</CountryCodeMobilePhone><MobilePhone>'.$object->thirdparty->phone.'</MobilePhone></Address></Billing>';
+	$pbx_shoppingcart = '<?xml version="1.0" encoding="utf-8" ?><shoppingcart><total><totalQuantity>'.count($object->lines).'</totalQuantity></total></shoppingcart>';
+	$pbx_souhaitauthent = '02';		// Variable de souhait authentification 3DS (01 par défaut, 02 pour exemption 3DS)
+	if($pbx_total > 3000) {
+		$pbx_souhaitauthent = '01';	// Vérification du montant maximal pour l'exemption 3DS
+	}
 
 // --------------- TESTS DE DISPONIBILITE DES SERVEURS ---------------
 
@@ -178,7 +183,7 @@ if (!$confError) {
 		die("Erreur : Aucun serveur fonctionnel n'a été trouvé");
 	}
 
-	$serveurOK = 'https://' . $serveurOK . '/cgi/MYchoix_pagepaiement.cgi';
+	echo $serveurOK = 'https://' . $serveurOK . '/cgi/MYchoix_pagepaiement.cgi';
 
 // --------------- TRAITEMENT DES VARIABLES ---------------
 
@@ -197,7 +202,10 @@ if (!$confError) {
 		"&PBX_ANNULE=" . $pbx_annule .
 		"&PBX_REFUSE=" . $pbx_refuse .
 		"&PBX_HASH=SHA512" .
-		"&PBX_TIME=" . $dateTime;
+		"&PBX_TIME=" . $dateTime .
+		"&PBX_SHOPPINGCART=".$pbx_shoppingcart.
+		"&PBX_BILLING=".$pbx_billing.
+		"&PBX_SOUHAITAUTHENT=".$pbx_souhaitauthent;
 
 	if ($extrafields2['options_mbi_payment_multiple'] == "2") {
 		$msg .= "&PBX_2MONT1=" . $pbx_2mont1;
@@ -212,50 +220,54 @@ if (!$confError) {
 	$binKey = pack("H*", $key);
 	$hmac = strtoupper(hash_hmac('sha512', $msg, $binKey));
 
-	$form = "<form id='payment_form' method='POST' action='" . $serveurOK . "'>"
-	."<input type='hidden' name='PBX_SITE' value='" . $pbx_site . "'>"
-	."<input type='hidden' name='PBX_RANG' value='" . $pbx_rang . "'>"
-	."<input type='hidden' name='PBX_IDENTIFIANT' value='" . $pbx_identifiant . "'>"
-	."<input type='hidden' name='PBX_TOTAL' value='" . $pbx_total . "'>"
+	$form = "<form id='payment_form' method='POST' action='" . $serveurOK . "' />"
+	."<input type='hidden' name='PBX_SITE' value='" . $pbx_site . "' />"
+	."<input type='hidden' name='PBX_RANG' value='" . $pbx_rang . "' />"
+	."<input type='hidden' name='PBX_IDENTIFIANT' value='" . $pbx_identifiant . "' />"
+	."<input type='hidden' name='PBX_TOTAL' value='" . $pbx_total . "' />"
 	."<input type='hidden' name='PBX_DEVISE' value='978'>"
-	."<input type='hidden' name='PBX_CMD' value='" . $pbx_cmd . "'>"
-	."<input type='hidden' name='PBX_PORTEUR' value='" . $pbx_porteur . "'>"
-	."<input type='hidden' name='PBX_REPONDRE_A' value='" . $pbx_repondre_a . "'>"
-	."<input type='hidden' name='PBX_RETOUR' value='" . $pbx_retour . "'>"
-	."<input type='hidden' name='PBX_EFFECTUE' value='" . $pbx_effectue . "'>"
-	."<input type='hidden' name='PBX_ANNULE' value='" . $pbx_annule . "'>"
-	."<input type='hidden' name='PBX_REFUSE' value='" . $pbx_refuse . "'>"
+	."<input type='hidden' name='PBX_CMD' value='" . $pbx_cmd . "' />"
+	."<input type='hidden' name='PBX_PORTEUR' value='" . $pbx_porteur . "' />"
+	."<input type='hidden' name='PBX_REPONDRE_A' value='" . $pbx_repondre_a . "' />"
+	."<input type='hidden' name='PBX_RETOUR' value='" . $pbx_retour . "' />"
+	."<input type='hidden' name='PBX_EFFECTUE' value='" . $pbx_effectue . "' />"
+	."<input type='hidden' name='PBX_ANNULE' value='" . $pbx_annule . "' />"
+	."<input type='hidden' name='PBX_REFUSE' value='" . $pbx_refuse . "' />"
 	."<input type='hidden' name='PBX_HASH' value='SHA512'>"
-	."<input type='hidden' name='PBX_TIME' value='" . $dateTime . "'>";
+	."<input type='hidden' name='PBX_TIME' value='" . $dateTime . "' />";
 	if ($extrafields2['options_mbi_payment_multiple'] == "2") {
-		$form .= "<input type='hidden' name='PBX_2MONT1' value='" . $pbx_2mont1 . "'>";
-		$form .= "<input type='hidden' name='PBX_DATE1' value='" . $pbx_date1 . "'>";
+		$form .= "<input type='hidden' name='PBX_2MONT1' value='" . $pbx_2mont1 . "' />";
+		$form .= "<input type='hidden' name='PBX_DATE1' value='" . $pbx_date1 . "' />";
 	} else if ($extrafields2['options_mbi_payment_multiple'] == "3") {
-		$form .= "<input type='hidden' name='PBX_2MONT1' value='" . $pbx_2mont1 . "'>";
-		$form .= "<input type='hidden' name='PBX_DATE1' value='" . $pbx_date1 . "'>";
-		$form .= "<input type='hidden' name='PBX_2MONT2' value='" . $pbx_2mont2 . "'>";
-		$form .= "<input type='hidden' name='PBX_DATE2' value='" . $pbx_date2 . "'>";
+		$form .= "<input type='hidden' name='PBX_2MONT1' value='" . $pbx_2mont1 . "' />";
+		$form .= "<input type='hidden' name='PBX_DATE1' value='" . $pbx_date1 . "' />";
+		$form .= "<input type='hidden' name='PBX_2MONT2' value='" . $pbx_2mont2 . "' />";
+		$form .= "<input type='hidden' name='PBX_DATE2' value='" . $pbx_date2 . "' />";
 	}
-	$form .= "<input type='hidden' name='PBX_HMAC' value='" . $hmac . "'>";
-	$form .= "<input class='button' type='submit' value='" . $langs->trans("MBIETransactionsPaymentPageContinue") . "'>";
+	$form .= "<input type='hidden' name='PBX_BILLING' value='".$pbx_billing."' />";
+	$form .= "<input type='hidden' name='PBX_SHOPPINGCART' value='".$pbx_shoppingcart."' />";
+	$form .= "<input type='hidden' name='PBX_SOUHAITAUTHENT' value='".$pbx_souhaitauthent."' />";
+
+	$form .= "<input type='hidden' name='PBX_HMAC' value='" . $hmac . "' />";
+	$form .= "<input class='button' type='submit' value=\"" . $langs->trans("MBIETransactionsPaymentPageContinue") . "\" />";
 	$form .= "</form>";
 	
 	// REDIRECTION DIRECTE
 
 	if ($autosubmit) {
 		echo $form;
-		echo '<script type="text/javascript">document.getElementById(\'payment_form\').submit();</script>';
+		//echo '<script type="text/javascript">document.getElementById(\'payment_form\').submit();</script>';
 		die();
 	}
 	
 	// AFFICHAGE COMPLET
 
 	echo "<head><meta name='robots' content='noindex,nofollow'><title>" . $langs->trans("MBIETransactionsPaymentPageTitle") . "</title>";
-	echo "<link rel='stylesheet' type='text/css' href='" . DOL_URL_ROOT . $conf->css . "?lang=" . $langs->defaultlang . "'>";
+	echo "<link rel='stylesheet' type='text/css' href='" . DOL_URL_ROOT . $conf->css . "?lang=" . $langs->defaultlang . "' />";
 	echo "<link rel='stylesheet' type='text/css' href='" . DOL_URL_ROOT . $path . "/mbietransactions/style.css'></head>";
 	echo "<div id='logo'>";
 	if (!empty($mysoc->logo)) {
-		echo "<img width='150px;' id='paymentlogo' title='" . $conf->global->MAIN_INFO_SOCIETE_NOM . "' src='" . DOL_URL_ROOT . "/viewimage.php?modulepart=mycompany&amp;file=" . urlencode('logos/' . $mysoc->logo) . "'>";
+		echo "<img width='150px;' id='paymentlogo' title='" . $conf->global->MAIN_INFO_SOCIETE_NOM . "' src='" . DOL_URL_ROOT . "/viewimage.php?modulepart=mycompany&amp;file=" . urlencode('logos/' . $mysoc->logo) . "' />";
 	}
 	echo "</div>";
 
@@ -302,11 +314,11 @@ if (!$confError) {
 else {
 
 	echo "<head><meta name='robots' content='noindex,nofollow'><title>" . $langs->trans("MBIETransactionsPaymentPageTitle") . "</title>";
-	echo "<link rel='stylesheet' type='text/css' href='" .  DOL_URL_ROOT . $conf->css . "?lang=" . $langs->defaultlang . "'>";
+	echo "<link rel='stylesheet' type='text/css' href='" .  DOL_URL_ROOT . $conf->css . "?lang=" . $langs->defaultlang . "' />";
 	echo "<link rel='stylesheet' type='text/css' href='" . DOL_URL_ROOT . $path . "/mbietransactions/style.css'></head>";
 	echo "<div id='logo'>";
 	if (!empty($mysoc->logo)) {
-		echo "<img width='150px;' id='paymentlogo' title='" . $conf->global->MAIN_INFO_SOCIETE_NOM . "' src='" . DOL_URL_ROOT . "/viewimage.php?modulepart=mycompany&amp;file=" . urlencode('logos/'.$mysoc->logo) ."'>";
+		echo "<img width='150px;' id='paymentlogo' title='" . $conf->global->MAIN_INFO_SOCIETE_NOM . "' src='" . DOL_URL_ROOT . "/viewimage.php?modulepart=mycompany&amp;file=" . urlencode('logos/'.$mysoc->logo) ."' />";
 	}
 	echo "</div>";
 
