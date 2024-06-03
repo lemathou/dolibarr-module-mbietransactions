@@ -155,7 +155,7 @@ if (!$confError) {
 	$pbx_refuse = dol_buildpath($path . '/mbietransactions/refused.php', 2);
 	$pbx_repondre_a = str_replace('http:', 'https:', dol_buildpath($path . '/mbietransactions/retour.php', 2));
 	$pbx_retour = 'Mt:M;Ref:R;Auto:A;Erreur:E;Trans:T';
-	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.$object->thirdparty->name.'</FirstName><LastName>'.$object->thirdparty->name.'</LastName><Address1>'.$object->thirdparty->address.'</Address1><ZipCode>'.$object->thirdparty->zip.'</ZipCode><City>'.$object->thirdparty->town.'</City><CountryCode>'.$object->thirdparty->country_code.'</CountryCode><CountryCodeMobilePhone>+33</CountryCodeMobilePhone><MobilePhone>'.$object->thirdparty->phone.'</MobilePhone></Address></Billing>';
+	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.$object->thirdparty->name.'</FirstName><LastName>'.$object->thirdparty->name.'</LastName><Address1>'.$object->thirdparty->address.'</Address1><ZipCode>'.$object->thirdparty->zip.'</ZipCode><City>'.$object->thirdparty->town.'</City><CountryCode>'.('250').'</CountryCode><CountryCodeMobilePhone>'.('+33').'</CountryCodeMobilePhone><MobilePhone>'.$object->thirdparty->phone.'</MobilePhone></Address></Billing>';
 	$pbx_shoppingcart = '<?xml version="1.0" encoding="utf-8" ?><shoppingcart><total><totalQuantity>'.count($object->lines).'</totalQuantity></total></shoppingcart>';
 	$pbx_souhaitauthent = '02';		// Variable de souhait authentification 3DS (01 par défaut, 02 pour exemption 3DS)
 	if($pbx_total > 3000) {
@@ -187,6 +187,7 @@ if (!$confError) {
 
 // --------------- TRAITEMENT DES VARIABLES ---------------
 
+	$fields3DSV2 = true;
 	$dateTime = date("c");
 
 	$msg = "PBX_SITE=" . $pbx_site .
@@ -202,8 +203,10 @@ if (!$confError) {
 		"&PBX_ANNULE=" . $pbx_annule .
 		"&PBX_REFUSE=" . $pbx_refuse .
 		"&PBX_HASH=SHA512" .
-		"&PBX_TIME=" . $dateTime .
-		"&PBX_SHOPPINGCART=".$pbx_shoppingcart.
+		"&PBX_TIME=" . $dateTime;
+
+	if ($fields3DSV2)
+		$msg .= "&PBX_SHOPPINGCART=".$pbx_shoppingcart.
 		"&PBX_BILLING=".$pbx_billing.
 		"&PBX_SOUHAITAUTHENT=".$pbx_souhaitauthent;
 
@@ -235,6 +238,11 @@ if (!$confError) {
 	."<input type='hidden' name='PBX_REFUSE' value='" . $pbx_refuse . "' />"
 	."<input type='hidden' name='PBX_HASH' value='SHA512'>"
 	."<input type='hidden' name='PBX_TIME' value='" . $dateTime . "' />";
+	if ($fields3DSV2) {
+		$form .= "<input type='hidden' name='PBX_SHOPPINGCART' value='".htmlspecialchars($pbx_shoppingcart)."' />";
+		$form .= "<input type='hidden' name='PBX_BILLING' value='".htmlspecialchars($pbx_billing)."' />";
+		$form .= "<input type='hidden' name='PBX_SOUHAITAUTHENT' value='".$pbx_souhaitauthent."' />";
+	}
 	if ($extrafields2['options_mbi_payment_multiple'] == "2") {
 		$form .= "<input type='hidden' name='PBX_2MONT1' value='" . $pbx_2mont1 . "' />";
 		$form .= "<input type='hidden' name='PBX_DATE1' value='" . $pbx_date1 . "' />";
@@ -244,9 +252,6 @@ if (!$confError) {
 		$form .= "<input type='hidden' name='PBX_2MONT2' value='" . $pbx_2mont2 . "' />";
 		$form .= "<input type='hidden' name='PBX_DATE2' value='" . $pbx_date2 . "' />";
 	}
-	$form .= "<input type='hidden' name='PBX_BILLING' value='".$pbx_billing."' />";
-	$form .= "<input type='hidden' name='PBX_SHOPPINGCART' value='".$pbx_shoppingcart."' />";
-	$form .= "<input type='hidden' name='PBX_SOUHAITAUTHENT' value='".$pbx_souhaitauthent."' />";
 
 	$form .= "<input type='hidden' name='PBX_HMAC' value='" . $hmac . "' />";
 	$form .= "<input class='button' type='submit' value=\"" . $langs->trans("MBIETransactionsPaymentPageContinue") . "\" />";
@@ -256,7 +261,7 @@ if (!$confError) {
 
 	if ($autosubmit) {
 		echo $form;
-		//echo '<script type="text/javascript">document.getElementById(\'payment_form\').submit();</script>';
+		echo '<script type="text/javascript">document.getElementById(\'payment_form\').submit();</script>';
 		die();
 	}
 	
