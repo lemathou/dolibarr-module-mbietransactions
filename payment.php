@@ -155,7 +155,15 @@ if (!$confError) {
 	$pbx_refuse = dol_buildpath($path . '/mbietransactions/refused.php', 2);
 	$pbx_repondre_a = str_replace('http:', 'https:', dol_buildpath($path . '/mbietransactions/retour.php', 2));
 	$pbx_retour = 'Mt:M;Ref:R;Auto:A;Erreur:E;Trans:T';
-	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.$object->thirdparty->name.'</FirstName><LastName>'.$object->thirdparty->name.'</LastName><Address1>'.$object->thirdparty->address.'</Address1><ZipCode>'.$object->thirdparty->zip.'</ZipCode><City>'.$object->thirdparty->town.'</City><CountryCode>'.('250').'</CountryCode><CountryCodeMobilePhone>'.('+33').'</CountryCodeMobilePhone><MobilePhone>'.$object->thirdparty->phone.'</MobilePhone></Address></Billing>';
+	$name = preg_split("/[\s]+/", trim($object->thirdparty->name));
+	$lastname = array_shift($name);
+	$firstname = implode(' ', $name);
+	$tel = trim($object->thirdparty->phone);
+	if (substr($tel, 0, 2)=='00')
+		$tel = '+'.substr($tel, 2);
+	elseif (substr($tel, 0, 1)=='0')
+		$tel = '+33'.substr($tel, 1);
+	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.htmlspecialchars($firstname, ENT_QUOTES).'</FirstName><LastName>'.htmlspecialchars($lastname, ENT_QUOTES).'</LastName><Address1>'.htmlspecialchars(trim($object->thirdparty->address), ENT_QUOTES).'</Address1><ZipCode>'.htmlspecialchars(trim($object->thirdparty->zip), ENT_QUOTES).'</ZipCode><City>'.htmlspecialchars(trim($object->thirdparty->town), ENT_QUOTES).'</City><CountryCode>'.('250').'</CountryCode><CountryCodeMobilePhone>'.('+33').'</CountryCodeMobilePhone><MobilePhone>'.htmlspecialchars($tel, ENT_QUOTES).'</MobilePhone></Address></Billing>';
 	$pbx_shoppingcart = '<?xml version="1.0" encoding="utf-8" ?><shoppingcart><total><totalQuantity>'.count($object->lines).'</totalQuantity></total></shoppingcart>';
 	$pbx_souhaitauthent = '02';		// Variable de souhait authentification 3DS (01 par défaut, 02 pour exemption 3DS)
 	if($pbx_total > 3000) {
