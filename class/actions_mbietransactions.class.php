@@ -57,7 +57,7 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 		$reste = ($deja>0 ?max(0, round($object->total_ttc-$deja, 2)) :$object->total_ttc);
 		//var_dump($object->fin_validite, $time, empty($object->fin_validite) || $object->fin_validite < $time);
 
-		print '<div style="width: 800px;">';
+		print '<div style="">';
 		if ($objecttype=='Propal') {
 			$fin_validite = $object->fin_validite ?$object->fin_validite+86400 :0;
 			$ok = $fin_validite && $fin_validite > $time;
@@ -82,7 +82,7 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 		//var_dump($object); die();
 		echo '<div id="voile" class="voile"></div>';
 
-		print '<div style="width: 400px;"><img src="/custom/mbietransactions/img/ca-e-transactions-bis-400px.png" alt="E-Transactions Crédit Agricole" width="400px" /></div>';
+		print '<div style=""><img src="/custom/mbietransactions/img/ca-e-transactions-bis-400px.png" alt="E-Transactions Crédit Agricole" width="400px" /></div>';
 
 		// Acompte
 		// Une seule fois => si déjà alors pas acompte
