@@ -41,6 +41,15 @@ div.buttonpayment .small {
     text-decoration: underline;
 }
 
+/* MMI  */
+
+@media screen and (max-width: 700px) {
+	div.backgreypublicpayment {
+		padding: 5px;
+	}
+}
+
+
 div.voile {
     opacity: 0.75;
     position: absolute;
