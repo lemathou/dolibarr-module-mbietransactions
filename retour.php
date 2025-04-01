@@ -120,18 +120,34 @@ elseif ($objecttype=='Commande')
 	$object_url = 'https://'.$_SERVER['HTTP_HOST'].'/commande/card.php?id='.$id;
 elseif ($objecttype=='Facture')
 	$object_url = 'https://'.$_SERVER['HTTP_HOST'].'/compta/facture/card.php?id='.$id;
-	
+
 $accountid = $conf->global->MBIETRANSACTIONS_BANK_ACCOUNT;
 //var_dump($accountid); die();
 $amount = $mt / 100;
 
-$resql2 = $db->query("SELECT *
+if ((int)$obj->mutiple) {
+	$multipayment=(int)$obj->mutiple."X";
+
+	$resql2 = $db->query("SELECT *
 	FROM " . MAIN_DB_PREFIX . "c_paiement
-	WHERE code = 'CBI' AND entity = " . $conf->entity);
-if ($resql2) {
-	$obj2 = $db->fetch_object($resql2);
-	if ($obj2) {
-		$paiement_mode = $obj2->id;
+	WHERE code = 'CBI".$multipayment."' AND entity = " . $conf->entity);
+	if ($resql2) {
+		$obj2 = $db->fetch_object($resql2);
+		if ($obj2) {
+			$paiement_mode = $obj2->id;
+		}
+	}
+
+}
+if (empty($paiement_mode)) {
+	$resql2 = $db->query("SELECT *
+	FROM " . MAIN_DB_PREFIX . "c_paiement
+	WHERE code = 'CBI" . $multipayment . "' AND entity = " . $conf->entity);
+	if ($resql2) {
+		$obj2 = $db->fetch_object($resql2);
+		if ($obj2) {
+			$paiement_mode = $obj2->id;
+		}
 	}
 }
 
@@ -179,7 +195,7 @@ else {
 	$nb = mmi_etransactions::trans_query_nb($hash, $trans);
 	if ($nb>1)
 		$email_info .= "\r\n".'Echéance n°: '.$nb."\r\n";
-		
+
 	if (!empty($mail_to)) {
 		mmi_etransactions::notification_email(implode(',', $mail_to),
 			'Etransactions : Retour paiement '.$objecttype.' '.$ref.($nb>1 ?' - Echéance n°'.$nb :''),
@@ -204,7 +220,7 @@ else {
 		'accountid' => $accountid,
 		//'chqemetteur' => '', // pas obligatoire
 		//'chqbank' => '', // pas obligatoire
-		'module_oid' => $return_id,
+		'module_oid' => $return_id
 	];
 	$paiement_id = mmi_payments::add($objecttype, $id, $infos);
 
