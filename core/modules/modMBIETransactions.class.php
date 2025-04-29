@@ -31,7 +31,7 @@ class modMBIETransactions extends DolibarrModules
 	{
 		global $conf;
 		$this->db = $db;
-		$this->numero = 172370;
+		$this->numero = 437826;
 		$this->rights_class = 'mbietransactions';
 		$this->family = "interface";
 		$this->module_position = '90';

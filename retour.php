@@ -1,29 +1,16 @@
 <?php
 /**
  * Copyright (C) 2020       MB Informatique         <info@mb-informatique.fr>
- * Copyright (C) 2022       Mathieu Moulin          <contact@iprospective.fr>
+ * Copyright (C) 2022-2025  Mathieu Moulin          <contact@iprospective.fr>
  */
 
 if (!defined('NOLOGIN')) define("NOLOGIN", 1); // This means this output page does not require to be logged.
 if (!defined('NOCSRFCHECK')) define("NOCSRFCHECK", 1); // We accept to go on this page from external web site.
 
-global $db, $conf, $mysoc;
+require_once 'env.inc.php';
+require_once 'main_load.inc.php';
 
-try {
-	if (!file_exists('../../main.inc.php'))
-		throw new Exception ('Does not exist');
-	else
-		require '../../main.inc.php';
-	$path = "/custom";
-}
-catch(Exception $e) {
-	require '../main.inc.php';
-	$path = "";
-}
-
-//var_dump($mysoc->email); die();
-
-require_once DOL_DOCUMENT_ROOT . '/custom/mmipayments/class/mmi_payments.class.php';
+dol_include_once('/mmipayments/class/mmi_payments.class.php');
 dol_include_once('/mbietransactions/lib/create_link.lib.php');
 
 $error = GETPOST('Erreur');
@@ -156,13 +143,16 @@ if (empty($paiement_mode)) {
 $sql = "INSERT INTO `".MAIN_DB_PREFIX."mbi_etransactions_return`
 	(`fk_mbi_etransactions`, `mt`, `auto`, `erreur`, `trans`)
 	VALUES
-	(".$obj->rowid.", ".(is_numeric($mt) ?"'".$mt."'" :'NULL').", '".$autorisation."', '".$error."', '".$trans."')";
+	(".$obj->rowid.", ".(is_numeric($mt) ?"'".$mt."'" :'NULL').", '".$db->escape($autorisation)."', '".$error."', '".$trans."')";
 //echo $sql;
 $q = $db->query($sql); //  AND `return_tms` IS NULL ?
 $return_id = $db->last_insert_id(MAIN_DB_PREFIX.'mbi_etransactions_return');
 //var_dump($db); die();
 //var_dump($q);
 //var_dump($return_id); die();
+
+$user = new User($db);
+$user->fetch(1); // Admin @todo créer user spécifique pour trucs auto ?
 
 // Récupération liste contacts
 //var_dump($object);
@@ -189,9 +179,6 @@ if ($error !== '00000' || empty($autorisation) || empty($trans)) {
 }
 // Insert Paiement OK
 else {
-	$user = new User($db);
-	$user->fetch(1); // Admin @todo créer user spécifique pour trucs auto ?
-
 	$nb = mmi_etransactions::trans_query_nb($hash, $trans);
 	if ($nb>1)
 		$email_info .= "\r\n".'Echéance n°: '.$nb."\r\n";
