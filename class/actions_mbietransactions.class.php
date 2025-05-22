@@ -73,7 +73,7 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 			$ok = true;
 		}
 		if ($ok) {
-			echo '<p><input type="checkbox" id="cgv" name="cgv" value="1" /> '."J'ai lu les <a href=\"https://www.pisceen.com/fr/a/3-conditions-generales-de-vente\" target=\"_blank\">conditions générales de vente</a> et j'y adhère sans réserve.".'</p>';
+			echo '<p><input type="checkbox" id="cgv" name="cgv" value="1" /> '."<label for=\"cgv\">J'ai lu les <a href=\"https://www.pisceen.com/fr/a/3-conditions-generales-de-vente\" target=\"_blank\">conditions générales de vente</a> et j'y adhère sans réserve.</label>".'</p>';
 		}
 		elseif (!empty($nok_message)) {
 			echo '<p>'.$nok_message.'</p>';
