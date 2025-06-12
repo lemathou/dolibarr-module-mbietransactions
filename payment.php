@@ -159,11 +159,28 @@ if (!$confError) {
 	$lastname = array_shift($name);
 	$firstname = implode(' ', $name);
 	$tel = trim($object->thirdparty->phone);
-	if (substr($tel, 0, 2)=='00')
+	if (substr($tel, 0, 2)=='00') {
+		$tel_prefix = '+'.substr($tel, 2, 2);
 		$tel = '+'.substr($tel, 2);
-	elseif (substr($tel, 0, 1)=='0')
+	}
+	elseif (substr($tel, 0, 1)=='0') {
+		$tel_prefix = '+33';
 		$tel = '+33'.substr($tel, 1);
-	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$firstname), ENT_QUOTES).'</FirstName><LastName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$lastname), ENT_QUOTES).'</LastName><Address1>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',trim($object->thirdparty->address)), ENT_QUOTES).'</Address1><ZipCode>'.htmlspecialchars(trim($object->thirdparty->zip), ENT_QUOTES).'</ZipCode><City>'.htmlspecialchars(trim($object->thirdparty->town), ENT_QUOTES).'</City><CountryCode>'.('250').'</CountryCode><CountryCodeMobilePhone>'.('+33').'</CountryCodeMobilePhone><MobilePhone>'.htmlspecialchars($tel, ENT_QUOTES).'</MobilePhone></Address></Billing>';
+	}
+	else {
+		$tel_prefix = substr($tel, 0, 3);
+	}
+	if ($object->thirdparty->country_code=='FR' || empty($object->thirdparty->country_code)) {
+		$country_code = 'FR';
+		$country_num = '250';
+	}
+	else {
+		$sql = 'SELECT numeric_code FROM llx_c_country WHERE rowid="'.$object->thirdparty->country_id.'"';
+		$q = $db->query($sql);
+		list($country_num) = $q->fetch_row();
+		$country_code = $object->thirdparty->country_code;
+	}
+	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$firstname), ENT_QUOTES).'</FirstName><LastName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$lastname), ENT_QUOTES).'</LastName><Address1>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',trim($object->thirdparty->address)), ENT_QUOTES).'</Address1><ZipCode>'.htmlspecialchars(trim($object->thirdparty->zip), ENT_QUOTES).'</ZipCode><City>'.htmlspecialchars(trim($object->thirdparty->town), ENT_QUOTES).'</City><CountryCode>'.$country_num.'</CountryCode><CountryCodeMobilePhone>'.$tel_prefix.'</CountryCodeMobilePhone><MobilePhone>'.htmlspecialchars($tel, ENT_QUOTES).'</MobilePhone></Address></Billing>';
 	$pbx_shoppingcart = '<?xml version="1.0" encoding="utf-8" ?><shoppingcart><total><totalQuantity>'.count($object->lines).'</totalQuantity></total></shoppingcart>';
 	$pbx_souhaitauthent = '02';		// Variable de souhait authentification 3DS (01 par défaut, 02 pour exemption 3DS)
 	if($pbx_total > 3000) {
