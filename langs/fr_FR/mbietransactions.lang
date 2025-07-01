@@ -26,7 +26,6 @@ ModuleMBIETransactionsDesc = Module de paiement en ligne avec la solution de pai
 # Page d'administration
 #
 MBIETransactionsSetup = Configuration du module MBI ETransactions
-Settings = Réglages
 MBIETransactionsSetupPage = Page de configuration du module MBI ETransactions
 
 MBIETRANSACTIONS_TEST = Mode Test
@@ -58,7 +57,6 @@ MBIETRANSACTIONS_SUBJECT_PAID_INVOICE_MAIL = Sujet du mail avec facture acquité
 #
 # Page À propos
 #
-About = À propos
 MBIETransactionsAbout = À propos de MBI ETransactions
 MBIETransactionsAboutPage = Page à propos de MBI ETransactions
 
@@ -113,5 +111,4 @@ MBIETransactionsPaymentSoldeMultOK = Autoriser le x fois sur un reste à payer (
 MBIETransactionsDoPayment = Payer par Carte
 MBIETransactionsDoPaymentAcompte = Acompte %s par Carte
 MBIETransactionsDoPaymentMultiple = Payer en %s fois par Carte
-MBIETransactionsDoPaymentTransfer = Payer par virement bancaire
-MBIETransactionsDoPaymentCheque = Payer par chèque
+
