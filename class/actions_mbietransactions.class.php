@@ -51,6 +51,10 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 		// die();
 		$time = time();
 
+		// Paylent means activated
+		$mean_paypal = getDolGlobalInt('MBIETRANSACTIONS_MEANS_PAYPAL');
+		$mean_amex = getDolGlobalInt('MBIETRANSACTIONS_MEANS_AMEX');
+
 		$objecttype = get_class($object);
 		$deja = mmi_payments::total_regle($objecttype, $object->id);
 		//var_dump($deja);
@@ -75,11 +79,11 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 			print '<div class="button buttonpayment" id="div_dopayment_mbietransactions_acompte">
 			<input class="" type="submit" id="dopayment_mbietransactions_acompte" name="dopayment_mbietransactions" value="'.$langs->trans("MBIETransactionsDoPaymentAcompte", $amount.'€').'">';
 			print '<br />';
-			print '<span class="buttonpaymentsmall">
-			<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />
-			<img src="/custom/mbietransactions/img/paypal.png" alt="Paypal" class="img_paypal" />
-			<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />
-			</span>';
+			print '<span class="buttonpaymentsmall">'
+			.'<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />'
+			.($mean_paypal ?'<img src="/custom/mbietransactions/img/paypal.png" alt="Paypal" class="img_paypal" />' :'')
+			.($mean_amex ?'<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />' :'')
+			.'</span>';
 			print '</div>';
 		}
 
@@ -93,11 +97,11 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 			print '<div class="button buttonpayment" id="div_dopayment_mbietransactions_simple">
 			<input class="" type="submit" id="dopayment_mbietransactions_simple" name="dopayment_mbietransactions" value="'.$langs->trans("MBIETransactionsDoPayment").'">';
 			print '<br />';
-			print '<span class="buttonpaymentsmall">
-			<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />
-			<img src="/custom/mbietransactions/img/paypal.png" alt="Paypal" class="img_paypal" />
-			<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />
-			</span>';
+			print '<span class="buttonpaymentsmall">'
+			.'<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />'
+			.($mean_paypal ?'<img src="/custom/mbietransactions/img/paypal.png" alt="Paypal" class="img_paypal" />' :'')
+			.($mean_amex ?'<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />' :'')
+			.'</span>';
 			print '</div>';
 		}
 
@@ -112,10 +116,10 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 			print '<div class="button buttonpayment" id="div_dopayment_mbietransactions_multiple">
 			<input class="" type="submit" id="dopayment_mbietransactions_multiple" name="dopayment_mbietransactions" value="'.$langs->trans("MBIETransactionsDoPaymentMultiple", $multiple).'">';
 			print '<br />';
-			print '<span class="buttonpaymentsmall">
-			<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />
-			<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />
-			</span>';
+			print '<span class="buttonpaymentsmall">'
+			.'<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />'
+			.($mean_amex ?'<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />' :'')
+			.'</span>';
 			print '</div>';
 		}
 		// Multiple
@@ -127,10 +131,10 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 			print '<div class="button buttonpayment" id="div_dopayment_mbietransactions_multiple">
 			<input class="" type="submit" id="dopayment_mbietransactions_multiple" name="dopayment_mbietransactions" value="'.$langs->trans("MBIETransactionsDoPaymentMultiple", $multiple).'">';
 			print '<br />';
-			print '<span class="buttonpaymentsmall">
-			<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />
-			<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />
-			</span>';
+			print '<span class="buttonpaymentsmall">'
+			.'<img src="/custom/mbietransactions/img/cb-visa-mastercard.png" alt="CB Visa Mastercard" class="img_cb" />'
+			.($mean_amex ?'<img src="/custom/mbietransactions/img/amex.png" alt="Amex" class="img_amex" />' :'')
+			.'</span>';
 			print '</div>';
 		}
 		print '</div>';

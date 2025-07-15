@@ -28,6 +28,10 @@ dol_include_once('/mbietransactions/lib/create_link.lib.php');
 
 $langs->loadLangs(array("mbietransactions@mbietransactions"));
 
+// Paylent means activated
+$mean_paypal = getDolGlobalInt('MBIETRANSACTIONS_MEANS_PAYPAL');
+$mean_amex = getDolGlobalInt('MBIETRANSACTIONS_MEANS_AMEX');
+
 $hash = $_GET['hashp'];
 $autosubmit = isset($_GET['autosubmit']);
 
@@ -220,6 +224,7 @@ if (!$confError) {
 		"&PBX_IDENTIFIANT=" . $pbx_identifiant .
 		"&PBX_TOTAL=" . $pbx_total .
 		"&PBX_DEVISE=978" .
+		(!$mean_paypal ?"&PBX_TYPEPAIEMENT=CARTE" :'').
 		"&PBX_CMD=" . $pbx_cmd .
 		"&PBX_PORTEUR=" . $pbx_porteur .
 		"&PBX_REPONDRE_A=" . $pbx_repondre_a .
@@ -254,6 +259,7 @@ if (!$confError) {
 	."<input type='hidden' name='PBX_IDENTIFIANT' value='" . $pbx_identifiant . "' />"
 	."<input type='hidden' name='PBX_TOTAL' value='" . $pbx_total . "' />"
 	."<input type='hidden' name='PBX_DEVISE' value='978'>"
+	.(!$mean_paypal ?"<input type='hidden' name='PBX_TYPEPAIEMENT' value='CARTE'>" :'')
 	."<input type='hidden' name='PBX_CMD' value='" . $pbx_cmd . "' />"
 	."<input type='hidden' name='PBX_PORTEUR' value='" . $pbx_porteur . "' />"
 	."<input type='hidden' name='PBX_REPONDRE_A' value='" . $pbx_repondre_a . "' />"

@@ -27,18 +27,22 @@ require_once '../env.inc.php';
 require_once '../main_load.inc.php';
 
 $arrayofparameters = array(
-	'MBIETRANSACTIONS_TEST'=>array('css'=>'minwidth500', 'enabled'=>1),
+	'MBIETRANSACTIONS_TEST'=>array('type'=>'yesno', 'enabled'=>1),
+
+	'MBIETRANSACTIONS_TEST_INFOS'=>array('type'=>'separator', 'enabled'=>1),
 	'MBIETRANSACTIONS_TEST_RANK'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_TEST_ID'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_TEST_SHOP_ID'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_TEST_KEY'=>array('css'=>'minwidth500', 'enabled'=>1),
 	
+	'MBIETRANSACTIONS_PROD_INFOS'=>array('type'=>'separator', 'enabled'=>1),
 	'MBIETRANSACTIONS_RANK'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_ID'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_SHOP_ID'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_KEY'=>array('css'=>'minwidth500', 'enabled'=>1),
 	
-	'MBIETRANSACTIONS_DELIVERY_RECEIPT_EMAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
+	'MBIETRANSACTIONS_OPTIONS'=>array('type'=>'separator', 'enabled'=>1),
+	'MBIETRANSACTIONS_DELIVERY_RECEIPT_EMAIL'=>array('type'=>'yesno', 'enabled'=>1),
 	'MBIETRANSACTIONS_CC_EMAILS'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_NOTIFICATION_FROM_EMAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_NOTIFICATION_EMAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
@@ -47,7 +51,11 @@ $arrayofparameters = array(
 	'MBIETRANSACTIONS_SUBJECT_PAYMENT_MAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_TEMPLATE_PAYMENT_MAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_SUBJECT_PAID_INVOICE_MAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
-	'MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAIL'=>array('css'=>'minwidth500', 'enabled'=>1)
+	'MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
+
+	'MBIETRANSACTIONS_MEANS'=>array('type'=>'separator', 'enabled'=>1),
+	'MBIETRANSACTIONS_MEANS_PAYPAL'=>array('type'=>'yesno', 'enabled'=>1),
+	'MBIETRANSACTIONS_MEANS_AMEX'=>array('type'=>'yesno', 'enabled'=>1),
 );
 
 require_once('../../mmicommon/admin/mmisetup_1.inc.php');

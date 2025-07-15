@@ -54,6 +54,13 @@ MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAILTooltip = Modèle du mail envoyé qua
 MBIETRANSACTIONS_SUBJECT_PAYMENT_MAIL = Sujet du mail de paiement
 MBIETRANSACTIONS_SUBJECT_PAID_INVOICE_MAIL = Sujet du mail avec facture acquitée
 
+MBIETRANSACTIONS_TEST_INFOS = Configuration du mode test
+MBIETRANSACTIONS_PROD_INFOS = Configuration du mode production
+MBIETRANSACTIONS_OPTIONS = Options
+MBIETRANSACTIONS_MEANS = Moyens de paiement
+MBIETRANSACTIONS_MEANS_PAYPAL = PayPal activé
+MBIETRANSACTIONS_MEANS_AMEX = AMEX Activé
+
 #
 # Page À propos
 #
