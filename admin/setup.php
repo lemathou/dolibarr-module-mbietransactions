@@ -52,7 +52,7 @@ $arrayofparameters = array(
 	'MBIETRANSACTIONS_TEMPLATE_PAYMENT_MAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_SUBJECT_PAID_INVOICE_MAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
 	'MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAIL'=>array('css'=>'minwidth500', 'enabled'=>1),
-	'MBIETRANSACTIONS_RESTE_USE_CREDITS_DEPOSITS'=>array('type'=>'yesno', 'enabled'=>1),
+	//'MBIETRANSACTIONS_RESTE_USE_CREDITS_DEPOSITS'=>array('type'=>'yesno', 'enabled'=>1), // FACTURE_SUPPLIER_DEPOSITS_ARE_JUST_PAYMENTS used
 
 	'MBIETRANSACTIONS_MEANS'=>array('type'=>'separator', 'enabled'=>1),
 	'MBIETRANSACTIONS_MEANS_PAYPAL'=>array('type'=>'yesno', 'enabled'=>1),

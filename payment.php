@@ -56,7 +56,7 @@ if (!($object = mmi_payments::loadobject($objecttype, $id)))
 $totalttc = $object->total_ttc; // TOTAL TTC
 if ($objecttype=='Facture') {
 	$dejaregle = $object->getSommePaiement(($conf->multicurrency->enabled && $object->multicurrency_tx != 1) ? 1 : 0); // DEJA REGLE
-	$resteapayer = ($totalttc - $dejaregle - (getDolGlobalInt('MBIETRANSACTIONS_RESTE_USE_CREDITS_DEPOSITS') ?($object->getSumCreditNotesUsed() + $object->getSumDepositsUsed()) :0)); // RESTE A PAYER
+	$resteapayer = ($totalttc - $dejaregle - $object->getSumCreditNotesUsed() - (getDolGlobalInt('FACTURE_SUPPLIER_DEPOSITS_ARE_JUST_PAYMENTS') ?$object->getSumDepositsUsed() :0)); // RESTE A PAYER
 }
 else {
 	$dejaregle = mmi_payments::total_regle($objecttype, $object->id);;
