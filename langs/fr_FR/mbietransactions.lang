@@ -53,6 +53,7 @@ MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAIL_DEFAULT = Bonjour __THIRDPARTY_NAME_
 MBIETRANSACTIONS_TEMPLATE_PAID_INVOICE_MAILTooltip = Modèle du mail envoyé quand la facture est payée
 MBIETRANSACTIONS_SUBJECT_PAYMENT_MAIL = Sujet du mail de paiement
 MBIETRANSACTIONS_SUBJECT_PAID_INVOICE_MAIL = Sujet du mail avec facture acquitée
+MBIETRANSACTIONS_RESTE_USE_CREDITS_DEPOSITS = Déduire les crédits dispo et acomptes (non imputés) du reste à payer
 
 MBIETRANSACTIONS_TEST_INFOS = Configuration du mode test
 MBIETRANSACTIONS_PROD_INFOS = Configuration du mode production
