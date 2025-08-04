@@ -212,7 +212,7 @@ if (!$confError) {
 		die("Erreur : Aucun serveur fonctionnel n'a été trouvé");
 	}
 
-	echo $serveurOK = 'https://' . $serveurOK . '/cgi/MYchoix_pagepaiement.cgi';
+	$serveurOK = 'https://' . $serveurOK . '/cgi/MYchoix_pagepaiement.cgi';
 
 // --------------- TRAITEMENT DES VARIABLES ---------------
 
