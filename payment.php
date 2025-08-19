@@ -85,6 +85,22 @@ if ($resteapayer == 0) {
 
 // Grosse parenthèse
 if (!$confError) {
+
+	// On récupère le contact de facturation
+	$contacts = $object->liste_contact(-1, 'external');
+	foreach($contacts as $contact) {
+		//var_dump($contact);
+		// Contact suivi commande
+		if (in_array($contact['fk_c_type_contact'], [40, 60, 100])) {
+			$contactfact = new Contact($db);
+			$contactfact->fetch($contact['id']);
+		}
+	}
+	if (!empty($contactfact))
+		$thirdparty = $contactfact;
+	else
+		$thirdparty = $object->thirdparty;
+	
 	// Mode test
 	if ($conf->global->MBIETRANSACTIONS_TEST) {
 		$pbx_site = $conf->global->MBIETRANSACTIONS_TEST_SHOP_ID;
@@ -100,7 +116,7 @@ if (!$confError) {
 		$pbx_rang = $conf->global->MBIETRANSACTIONS_RANK;
 		$pbx_identifiant = $conf->global->MBIETRANSACTIONS_ID;
 		$key = $conf->global->MBIETRANSACTIONS_KEY;
-		$pbx_porteur = $object->thirdparty->email;
+		$pbx_porteur = $thirdparty->email;
 		$serveurs = array('tpeweb.e-transactions.fr', 'tpeweb1.e-transactions.fr');
 	}
 	
@@ -109,6 +125,7 @@ if (!$confError) {
 	//var_dump($pbx_total ); die();
 	$usercode = '';
 
+	// On récupère le contact interne de suivi de commande
 	$contacts = $object->liste_contact(-1, 'internal');
 	foreach($contacts as $contact) {
 		//var_dump($contact);
@@ -160,9 +177,9 @@ if (!$confError) {
 	$pbx_repondre_a = str_replace('http:', 'https:', dol_buildpath($path . '/mbietransactions/retour.php', 2));
 	$pbx_retour = 'Mt:M;Ref:R;Auto:A;Erreur:E;Trans:T';
 	$name = preg_split("/[\s]+/", trim($object->thirdparty->name));
-	$lastname = array_shift($name);
-	$firstname = implode(' ', $name);
-	$tel = trim($object->thirdparty->phone);
+	$lastname = !empty($thirdparty->lastname) ?$thirdparty->lastname :array_shift($name);
+	$firstname = !empty($thirdparty->firstname) ?$thirdparty->firstname :implode(' ', $name);
+	$tel = trim(!empty($thirdparty->phone_mobile) ?$thirdparty->phone_mobile :$thirdparty->phone);
 	if (substr($tel, 0, 2)=='00') {
 		$tel_prefix = '+'.substr($tel, 2, 2);
 		$tel = '+'.substr($tel, 2);
@@ -174,17 +191,17 @@ if (!$confError) {
 	else {
 		$tel_prefix = substr($tel, 0, 3);
 	}
-	if ($object->thirdparty->country_code=='FR' || empty($object->thirdparty->country_code)) {
+	if ($thirdparty->country_code=='FR' || empty($thirdparty->country_code)) {
 		$country_code = 'FR';
 		$country_num = '250';
 	}
 	else {
-		$sql = 'SELECT numeric_code FROM llx_c_country WHERE rowid="'.$object->thirdparty->country_id.'"';
+		$sql = 'SELECT numeric_code FROM llx_c_country WHERE rowid="'.$thirdparty->country_id.'"';
 		$q = $db->query($sql);
 		list($country_num) = $q->fetch_row();
-		$country_code = $object->thirdparty->country_code;
+		$country_code = $thirdparty->country_code;
 	}
-	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$firstname), ENT_QUOTES).'</FirstName><LastName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$lastname), ENT_QUOTES).'</LastName><Address1>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',trim($object->thirdparty->address)), ENT_QUOTES).'</Address1><ZipCode>'.htmlspecialchars(trim($object->thirdparty->zip), ENT_QUOTES).'</ZipCode><City>'.htmlspecialchars(trim($object->thirdparty->town), ENT_QUOTES).'</City><CountryCode>'.$country_num.'</CountryCode><CountryCodeMobilePhone>'.$tel_prefix.'</CountryCodeMobilePhone><MobilePhone>'.htmlspecialchars($tel, ENT_QUOTES).'</MobilePhone></Address></Billing>';
+	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$firstname), ENT_QUOTES).'</FirstName><LastName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$lastname), ENT_QUOTES).'</LastName><Address1>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',trim($thirdparty->address)), ENT_QUOTES).'</Address1><ZipCode>'.htmlspecialchars(trim($thirdparty->zip), ENT_QUOTES).'</ZipCode><City>'.htmlspecialchars(trim($thirdparty->town), ENT_QUOTES).'</City><CountryCode>'.$country_num.'</CountryCode><CountryCodeMobilePhone>'.$tel_prefix.'</CountryCodeMobilePhone><MobilePhone>'.htmlspecialchars($tel, ENT_QUOTES).'</MobilePhone></Address></Billing>';
 	$pbx_shoppingcart = '<?xml version="1.0" encoding="utf-8" ?><shoppingcart><total><totalQuantity>'.count($object->lines).'</totalQuantity></total></shoppingcart>';
 	$pbx_souhaitauthent = '02';		// Variable de souhait authentification 3DS (01 par défaut, 02 pour exemption 3DS)
 	if($pbx_total > 3000) {
