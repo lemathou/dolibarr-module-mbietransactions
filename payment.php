@@ -182,14 +182,16 @@ if (!$confError) {
 	$tel = trim(!empty($thirdparty->phone_mobile) ?$thirdparty->phone_mobile :$thirdparty->phone);
 	if (substr($tel, 0, 2)=='00') {
 		$tel_prefix = '+'.substr($tel, 2, 2);
-		$tel = '+'.substr($tel, 2);
+		//$tel = '+'.substr($tel, 2);
+		$tel = '0'.substr($tel, 4);
 	}
 	elseif (substr($tel, 0, 1)=='0') {
 		$tel_prefix = '+33';
-		$tel = '+33'.substr($tel, 1);
+		//$tel = '+33'.substr($tel, 1);
 	}
 	else {
 		$tel_prefix = substr($tel, 0, 3);
+		$tel = '0'.substr($tel, 3);
 	}
 	if ($thirdparty->country_code=='FR' || empty($thirdparty->country_code)) {
 		$country_code = 'FR';
