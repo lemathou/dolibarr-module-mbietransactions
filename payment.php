@@ -148,7 +148,7 @@ if (!$confError) {
 			break;
 		}
 	}
-	$pbx_cmd = $object->ref.($object->thirdparty ?' - '.$object->thirdparty->name :'').(!empty($usercode) ?' - '.$usercode :'').' - '.$hash;
+	$pbx_cmd = $object->ref.($object->thirdparty ?' - '.$object->thirdparty->name :'').(' - '.time()).(!empty($usercode) ?' - '.$usercode :'').' - '.$hash;
 	//var_dump($pbx_cmd); die();
 	
 	if ($extrafields2['options_mbi_payment_deposit'] > 0 && $extrafields2['options_mbi_payment_deposit'] > $dejaregle) {
