@@ -179,7 +179,16 @@ if (!$confError) {
 	$name = preg_split("/[\s]+/", trim($object->thirdparty->name));
 	$lastname = !empty($thirdparty->lastname) ?$thirdparty->lastname :array_shift($name);
 	$firstname = !empty($thirdparty->firstname) ?$thirdparty->firstname :implode(' ', $name);
-	$tel = trim(!empty($thirdparty->phone_mobile) ?$thirdparty->phone_mobile :$thirdparty->phone);
+	if(!empty($thirdparty->phone_mobile))
+		$tel = $thirdparty->phone_mobile;
+	elseif(!empty($thirdparty->phone_pro))
+		$tel = $thirdparty->phone_pro;
+	elseif(!empty($thirdparty->phone_perso))
+		$tel = $thirdparty->phone_perso;
+	else
+		$tel = $thirdparty->phone;
+	$tel = trim($tel);
+	//var_dump($thirdparty);
 	if (substr($tel, 0, 2)=='00') {
 		$tel_prefix = '+'.substr($tel, 2, 2);
 		//$tel = '+'.substr($tel, 2);
