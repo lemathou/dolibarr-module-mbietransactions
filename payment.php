@@ -26,6 +26,14 @@ catch(Exception $e) {
 //require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 dol_include_once('/mbietransactions/lib/create_link.lib.php');
 
+function Formatage($value, $maxLength) {
+    $value = strtoupper(Transliterator::create('NFD; [:Nonspacing Mark:] Remove; NFC')->transliterate($value));
+    $value = preg_replace('/[^A-Z0-9\s]/', '', $value);
+    $value = preg_replace('/\\s+/', ' ', $value);
+    $value = substr($value, 0, $maxLength);
+    return trim($value);
+}
+
 $langs->loadLangs(array("mbietransactions@mbietransactions"));
 
 // Paylent means activated
@@ -192,16 +200,15 @@ if (!$confError) {
 	if (substr($tel, 0, 2)=='00') {
 		$tel_prefix = '+'.substr($tel, 2, 2);
 		//$tel = '+'.substr($tel, 2);
-		$tel = substr($tel, 4);
+		$tel = '0'.substr($tel, 4);
 	}
 	elseif (substr($tel, 0, 1)=='0') {
 		$tel_prefix = '+33';
 		//$tel = '+33'.substr($tel, 1);
-		$tel = substr($tel, 1);
 	}
 	else {
 		$tel_prefix = substr($tel, 0, 3);
-		$tel = substr($tel, 3);
+		$tel = '0'.substr($tel, 3);
 	}
 	if ($thirdparty->country_code=='FR' || empty($thirdparty->country_code)) {
 		$country_code = 'FR';
@@ -213,7 +220,7 @@ if (!$confError) {
 		list($country_num) = $q->fetch_row();
 		$country_code = $thirdparty->country_code;
 	}
-	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$firstname), ENT_QUOTES).'</FirstName><LastName>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',$lastname), ENT_QUOTES).'</LastName><Address1>'.htmlspecialchars(iconv('UTF-8','ASCII//TRANSLIT',trim($thirdparty->address)), ENT_QUOTES).'</Address1><ZipCode>'.htmlspecialchars(trim($thirdparty->zip), ENT_QUOTES).'</ZipCode><City>'.htmlspecialchars(trim($thirdparty->town), ENT_QUOTES).'</City><CountryCode>'.$country_num.'</CountryCode><CountryCodeMobilePhone>'.$tel_prefix.'</CountryCodeMobilePhone><MobilePhone>'.htmlspecialchars($tel, ENT_QUOTES).'</MobilePhone></Address></Billing>';
+	$pbx_billing = '<?xml version="1.0" encoding="utf-8" ?><Billing><Address><FirstName>'.Formatage($firstname, 22).'</FirstName><LastName>'.Formatage($lastname, 22).'</LastName><Address1>'.Formatage($thirdparty->address, 50).'</Address1><ZipCode>'.Formatage($thirdparty->zip, 16).'</ZipCode><City>'.Formatage($thirdparty->town, 50).'</City><CountryCode>'.$country_num.'</CountryCode><CountryCodeMobilePhone>'.$tel_prefix.'</CountryCodeMobilePhone><MobilePhone>'.$tel.'</MobilePhone></Address></Billing>';
 	$pbx_shoppingcart = '<?xml version="1.0" encoding="utf-8" ?><shoppingcart><total><totalQuantity>'.count($object->lines).'</totalQuantity></total></shoppingcart>';
 	$pbx_souhaitauthent = '02';		// Variable de souhait authentification 3DS (01 par défaut, 02 pour exemption 3DS)
 	if($pbx_total > 3000) {
