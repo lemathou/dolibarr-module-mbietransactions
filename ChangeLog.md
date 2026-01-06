@@ -3,3 +3,8 @@
 ## 1.0
 
 Initial version
+
+## 1.0.3
+
+Fix : remove bad chars in ref
+

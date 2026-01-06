@@ -40,7 +40,7 @@ class modMBIETransactions extends DolibarrModules
 		$this->descriptionlong = "MBIETransactions description (Long)";
 		$this->editor_name = 'Mathieu Moulin iProspective';
 		$this->editor_url = 'https://iprospective.fr';
-		$this->version = '1.0.2';
+		$this->version = '1.0.3';
 
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto = 'logo@mbietransactions';
