@@ -96,6 +96,26 @@ MBIETransactionsPaymentPageDeadline = Date of payment
 MBIETransactionsPaymentMultiple = Payment in x times
 
 #
+# eTransactions tab on thirdparty card
+#
+MBIETransactionsTabTitle = eTransactions
+MBIETransactionsTrans = Transaction
+MBIETransactionsTransRef = Transaction ref.
+MBIETransactionsAuto = Authorization
+MBIETransactionsDolibarrPayment = Dolibarr payment
+MBIETransactionsStatusOk = Success
+MBIETransactionsStatusKo = Failed
+MBIETransactionsNoTransaction = No eTransactions transaction for this customer.
+MBIETransactionsPaymentMissing = Dolibarr payment missing
+MBIETransactionsRecreatePayment = Recreate payment
+MBIETransactionsConfirmRecreate = Confirm recreation of the Dolibarr payment for this successful eTransactions transaction?
+MBIETransactionsPaymentRecreated = Dolibarr payment successfully recreated (id %s).
+MBIETransactionsPaymentRecreateError = Failed to recreate the Dolibarr payment.
+MBIETransactionsRecapTransactions = %s transaction(s), %s successful
+MBIETransactionsRecapTotalOk = Total collected
+MBIETransactionsRecapMissing = %s Dolibarr payment(s) to recreate
+
+#
 # Pages de paiement Standard
 #
 MBIETransactionsDoPayment = Payer par Carte
