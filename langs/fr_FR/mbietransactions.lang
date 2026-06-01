@@ -114,6 +114,26 @@ MBIETransactionsPaymentMultiple = Paiement en x fois
 MBIETransactionsPaymentSoldeMultOK = Autoriser le x fois sur un reste à payer (éventuellement saisi manuellement)
 
 #
+# Onglet eTransactions sur la fiche tiers
+#
+MBIETransactionsTabTitle = eTransactions
+MBIETransactionsTrans = Transaction
+MBIETransactionsTransRef = Réf. transaction
+MBIETransactionsAuto = Autorisation
+MBIETransactionsDolibarrPayment = Paiement Dolibarr
+MBIETransactionsStatusOk = Réussie
+MBIETransactionsStatusKo = Échec
+MBIETransactionsNoTransaction = Aucune transaction eTransactions pour ce client.
+MBIETransactionsPaymentMissing = Paiement Dolibarr manquant
+MBIETransactionsRecreatePayment = Recréer le paiement
+MBIETransactionsConfirmRecreate = Confirmer la recréation du paiement Dolibarr pour cette transaction eTransactions réussie ?
+MBIETransactionsPaymentRecreated = Paiement Dolibarr recréé avec succès (id %s).
+MBIETransactionsPaymentRecreateError = Échec de la recréation du paiement Dolibarr.
+MBIETransactionsRecapTransactions = %s transaction(s) dont %s réussie(s)
+MBIETransactionsRecapTotalOk = Total encaissé
+MBIETransactionsRecapMissing = %s paiement(s) Dolibarr à recréer
+
+#
 # Pages de paiement Standard
 #
 MBIETransactionsDoPayment = Payer par Carte

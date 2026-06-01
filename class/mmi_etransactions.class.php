@@ -138,6 +138,120 @@ public static function createhash()
 	return $hashp;
 }
 
+/**
+ * Liste de toutes les transactions eTransactions (réussites et échecs) rattachées à un client,
+ * en remontant l'objet métier (Facture/Commande/Propal/Client) via la table hash et le paiement
+ * Dolibarr lié (s'il existe encore).
+ *
+ * @param int $socid Identifiant du tiers (llx_societe.rowid)
+ * @return array      Liste d'objets transaction, triés du plus récent au plus ancien
+ */
+public static function client_transactions($socid)
+{
+	global $db;
+
+	$socid = (int) $socid;
+	if (empty($socid))
+		return [];
+
+	$sql = "SELECT mr.rowid AS return_id, mr.tms AS return_date, mr.mt, mr.auto, mr.erreur, mr.trans, mr.fk_paiement,
+			mh.rowid AS hash_id, mh.objecttype, mh.fk_object, mh.amount AS cb_amount, mh.multiple AS cb_multiple, mh.hash,
+			COALESCE(f.ref, c.ref, pr.ref) AS object_ref,
+			p.rowid AS paiement_id, p.ref AS paiement_ref, p.datep AS paiement_date, p.amount AS paiement_amount
+		FROM ".MAIN_DB_PREFIX."mbi_etransactions_return mr
+		INNER JOIN ".MAIN_DB_PREFIX."mbi_etransactions_hash mh ON mh.rowid = mr.fk_mbi_etransactions
+		LEFT JOIN ".MAIN_DB_PREFIX."facture f ON mh.objecttype = 'Facture' AND f.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."commande c ON mh.objecttype = 'Commande' AND c.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."propal pr ON mh.objecttype = 'Propal' AND pr.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.rowid = mr.fk_paiement
+		WHERE (mh.objecttype = 'Facture' AND f.fk_soc = ".$socid.")
+			OR (mh.objecttype = 'Commande' AND c.fk_soc = ".$socid.")
+			OR (mh.objecttype = 'Propal' AND pr.fk_soc = ".$socid.")
+			OR (mh.objecttype = 'Client' AND mh.fk_object = ".$socid.")
+		ORDER BY mr.tms DESC, mr.rowid DESC";
+	//echo $sql;
+	$resql = $db->query($sql);
+	if (!$resql)
+		return [];
+
+	$l = [];
+	while ($obj = $db->fetch_object($resql))
+		$l[] = $obj;
+
+	return $l;
+}
+
+/**
+ * Recrée le paiement Dolibarr associé à une transaction eTransactions réussie dont le paiement
+ * a été supprimé (ou n'a jamais été créé). Rejoue la logique de retour.php (mode de règlement
+ * CBI / CBIxX, compte bancaire, montant) puis relie le nouveau paiement à la transaction.
+ *
+ * @param int $return_id Identifiant de la ligne llx_mbi_etransactions_return
+ * @return array          ['success'=>true,'paiement_id'=>int] ou ['error'=>string]
+ */
+public static function recreate_payment($return_id)
+{
+	global $db, $conf;
+
+	$return_id = (int) $return_id;
+	if (empty($return_id))
+		return ['error' => 'Identifiant de transaction manquant'];
+
+	$sql = "SELECT mr.rowid, mr.mt, mr.auto, mr.erreur, mr.trans, mr.fk_paiement,
+			mh.objecttype, mh.fk_object, mh.multiple
+		FROM ".MAIN_DB_PREFIX."mbi_etransactions_return mr
+		INNER JOIN ".MAIN_DB_PREFIX."mbi_etransactions_hash mh ON mh.rowid = mr.fk_mbi_etransactions
+		WHERE mr.rowid = ".$return_id;
+	$resql = $db->query($sql);
+	if (!$resql || !($row = $db->fetch_object($resql)))
+		return ['error' => 'Transaction introuvable'];
+
+	if ($row->erreur !== '00000')
+		return ['error' => 'Transaction non aboutie : paiement non recréable'];
+
+	// Un paiement Dolibarr existe-t-il encore pour cette transaction ?
+	if (!empty($row->fk_paiement)) {
+		$q = $db->query("SELECT rowid FROM ".MAIN_DB_PREFIX."paiement WHERE rowid = ".(int) $row->fk_paiement);
+		if ($q && $db->fetch_object($q))
+			return ['error' => 'Un paiement Dolibarr est déjà lié à cette transaction'];
+	}
+
+	// Détermination du mode de règlement (CBI ou CBIxX pour le multi-échéances)
+	$multipayment = ((int) $row->multiple > 1) ? ((int) $row->multiple)."X" : "";
+	$paiement_mode = null;
+	$resql2 = $db->query("SELECT id FROM ".MAIN_DB_PREFIX."c_paiement
+		WHERE code = 'CBI".$multipayment."' AND entity = ".$conf->entity);
+	if ($resql2 && ($o = $db->fetch_object($resql2)))
+		$paiement_mode = $o->id;
+	// Repli sur CBI simple si le mode multi-échéances n'existe pas
+	if (empty($paiement_mode)) {
+		$resql2 = $db->query("SELECT id FROM ".MAIN_DB_PREFIX."c_paiement
+			WHERE code = 'CBI' AND entity = ".$conf->entity);
+		if ($resql2 && ($o = $db->fetch_object($resql2)))
+			$paiement_mode = $o->id;
+	}
+
+	$ref = $row->objecttype.' '.$row->fk_object;
+	$infos = [
+		'amount' => $row->mt / 100,
+		'mode' => $paiement_mode,
+		'num' => $row->trans,
+		'note' => 'Etransactions Trans '.$row->trans.' pour '.$ref.' (paiement recréé manuellement)',
+		'accountid' => $conf->global->MBIETRANSACTIONS_BANK_ACCOUNT,
+		'module_oid' => $return_id,
+	];
+	$paiement_id = mmi_payments::add($row->objecttype, $row->fk_object, $infos);
+
+	if (empty($paiement_id))
+		return ['error' => 'Échec de la création du paiement Dolibarr'];
+
+	$db->query("UPDATE ".MAIN_DB_PREFIX."mbi_etransactions_return
+		SET fk_paiement = ".(int) $paiement_id."
+		WHERE rowid = ".$return_id);
+
+	return ['success' => true, 'paiement_id' => $paiement_id];
+}
+
 public static function notification_email($email_to, $subject, $message)
 {
 	global $conf, $mysoc;

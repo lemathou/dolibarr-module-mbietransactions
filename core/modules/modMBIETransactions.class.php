@@ -40,7 +40,7 @@ class modMBIETransactions extends DolibarrModules
 		$this->descriptionlong = "MBIETransactions description (Long)";
 		$this->editor_name = 'Mathieu Moulin iProspective';
 		$this->editor_url = 'https://iprospective.fr';
-		$this->version = '1.0.3';
+		$this->version = '1.0.4';
 
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto = 'logo@mbietransactions';
@@ -77,6 +77,8 @@ class modMBIETransactions extends DolibarrModules
 		}
 
 		$this->tabs = array();
+		// Onglet "eTransactions" sur la fiche tiers : historique des transactions + recréation paiement
+		$this->tabs[] = array('data' => 'thirdparty:+etransactions:MBIETransactionsTabTitle:mbietransactions@mbietransactions:$conf->mbietransactions->enabled && $user->rights->societe->lire:/mbietransactions/societe_etransactions.php?socid=__ID__');
 		$this->dictionaries = array();
 		$this->boxes = array();
 		$this->cronjobs = array();
