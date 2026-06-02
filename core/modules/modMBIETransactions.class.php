@@ -40,7 +40,7 @@ class modMBIETransactions extends DolibarrModules
 		$this->descriptionlong = "MBIETransactions description (Long)";
 		$this->editor_name = 'Mathieu Moulin iProspective';
 		$this->editor_url = 'https://iprospective.fr';
-		$this->version = '1.0.4';
+		$this->version = '1.1.0';
 
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto = 'logo@mbietransactions';
@@ -55,7 +55,7 @@ class modMBIETransactions extends DolibarrModules
 			'theme' => 0,
 			'css' => array(),
 			'js' => array(),
-			'hooks' => array('invoicecard', 'ordercard', 'propalcard', 'newpayment'),
+			'hooks' => array('invoicecard', 'ordercard', 'propalcard', 'newpayment', 'thirdpartycomm'),
 			'moduleforexternal' => 0,
 		);
 		$this->dirs = array("/mbietransactions/temp");
@@ -77,8 +77,9 @@ class modMBIETransactions extends DolibarrModules
 		}
 
 		$this->tabs = array();
-		// Onglet "eTransactions" sur la fiche tiers : historique des transactions + recréation paiement
-		$this->tabs[] = array('data' => 'thirdparty:+etransactions:MBIETransactionsTabTitle:mbietransactions@mbietransactions:$conf->mbietransactions->enabled && $user->rights->societe->lire:/mbietransactions/societe_etransactions.php?socid=__ID__');
+		// L'historique eTransactions est désormais surfacé via un bloc sur l'onglet Client
+		// (hook addMoreRecentObjects, contexte thirdpartycomm), plus via un onglet top-level.
+		// La page societe_etransactions.php reste atteinte par le lien « voir tout » du bloc.
 		$this->dictionaries = array();
 		$this->boxes = array();
 		$this->cronjobs = array();

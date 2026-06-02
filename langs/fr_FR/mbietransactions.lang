@@ -117,6 +117,8 @@ MBIETransactionsPaymentSoldeMultOK = Autoriser le x fois sur un reste à payer (
 # Onglet eTransactions sur la fiche tiers
 #
 MBIETransactionsTabTitle = eTransactions
+MBIETransactionsRecentTitle = Transactions eTransactions
+MBIETransactionsSeeAll = Voir tout l'historique
 MBIETransactionsTrans = Transaction
 MBIETransactionsTransRef = Réf. transaction
 MBIETransactionsAuto = Autorisation

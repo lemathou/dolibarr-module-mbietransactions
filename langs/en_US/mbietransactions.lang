@@ -99,6 +99,8 @@ MBIETransactionsPaymentMultiple = Payment in x times
 # eTransactions tab on thirdparty card
 #
 MBIETransactionsTabTitle = eTransactions
+MBIETransactionsRecentTitle = eTransactions transactions
+MBIETransactionsSeeAll = See full history
 MBIETransactionsTrans = Transaction
 MBIETransactionsTransRef = Transaction ref.
 MBIETransactionsAuto = Authorization
