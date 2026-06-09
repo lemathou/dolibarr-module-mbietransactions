@@ -67,6 +67,12 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 			if ($i++ >= $max)
 				break;
 			$is_ok = ($t->erreur === '00000');
+			$is_missing = ($is_ok && empty($t->paiement_id));
+			$is_multiple = (!empty($t->cb_multiple) && (int) $t->cb_multiple > 1);
+			// « Réussite normale » (succès, paiement présent, non multi-échéances) :
+			// déjà visible dans le bloc « Derniers règlements » -> on l'atténue ici
+			// pour mettre en avant ce qui est propre à eTransactions (échecs, à recréer, 3x).
+			$is_normal = ($is_ok && !$is_missing && !$is_multiple);
 
 			$url = '';
 			if ($t->objecttype == 'Facture')
@@ -76,8 +82,10 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 			elseif ($t->objecttype == 'Propal')
 				$url = DOL_URL_ROOT.'/comm/propal/card.php?id='.$t->fk_object;
 			$label = dol_escape_htmltag($t->object_ref ? $t->object_ref : $t->objecttype.' #'.$t->fk_object);
+			if ($is_multiple)
+				$label .= ' <span class="badge badge-status4 badge-status" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsPaymentMultiple')).'">'.((int) $t->cb_multiple).'X</span>';
 
-			$out .= '<tr class="oddeven">';
+			$out .= '<tr class="oddeven'.($is_normal ? ' opacitymedium' : '').'">';
 			$out .= '<td class="nowraponall">'.dol_print_date($this->db->jdate($t->return_date), 'day').'</td>';
 			$out .= '<td>'.($url ? '<a href="'.$url.'">'.$label.'</a>' : $label).'</td>';
 			$out .= '<td class="center">';
