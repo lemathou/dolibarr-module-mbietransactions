@@ -15,6 +15,8 @@ Fix : remove bad chars in ref
 - Complémentaire (et non redondant) avec le bloc « Derniers règlements » du module mmipayments : les réussites « normales » (succès, paiement présent, paiement simple) — déjà listées comme règlements par mmipayments — sont **atténuées** ici ; le bloc met en avant ce qui est propre à eTransactions : **échecs**, **paiements à recréer**, et **paiements 3x** (marqueur `NX`)
 - Lien « voir tout l'historique » vers la page dédiée `societe_etransactions.php` (conservée, porte toujours l'action de recréation)
 - Suppression de l'onglet eTransactions top-level (plus de const de tab à activer au déploiement, seulement le hook)
+- Le bloc est rendu **sous** le bloc « Derniers règlements » (rang d'exécution des hooks `priority = 60`, défaut Dolibarr 50) : l'ordre porte le sens, le complément vient après le général
+- Chargement du fichier de langue `other` pour l'en-tête de colonne « Objet lié » (sans lui, la clé `LinkedObject` s'affichait brute)
 
 ## 1.0.4
 

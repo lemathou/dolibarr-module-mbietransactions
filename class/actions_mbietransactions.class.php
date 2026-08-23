@@ -11,6 +11,11 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 {
 	const MOD_NAME = 'mbietransactions';
 
+	// Rang d'exécution des hooks (défaut Dolibarr : 50 ; plus grand = exécuté plus tard).
+	// 60 place le bloc eTransactions SOUS le bloc « Derniers règlements » de mmipayments,
+	// dont il est le complément (échecs, paiements à recréer, 3x).
+	public $priority = 60;
+
 	/**
 	 * Hook onglet Client (comm/card.php, contexte thirdpartycomm) :
 	 * bloc teaser de l'historique eTransactions du tiers (réussites et échecs),
@@ -26,7 +31,7 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 		if (empty($object->id) || !$user->hasRight('societe', 'lire'))
 			return 0;
 
-		$langs->loadLangs(array('mbietransactions@mbietransactions', 'compta', 'bills'));
+		$langs->loadLangs(array('mbietransactions@mbietransactions', 'compta', 'bills', 'other'));
 
 		$transactions = mmi_etransactions::client_transactions($object->id);
 		// Tiers sans transaction eTransactions : on n'affiche rien
