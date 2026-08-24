@@ -44,7 +44,21 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 
 		$langs->loadLangs(array('mbietransactions@mbietransactions', 'compta', 'bills', 'other'));
 
-		$transactions = mmi_etransactions::object_transactions($objecttype, $id);
+		// Le socle a résolu le cycle devis / commande / facture : on le suit, sinon
+		// l'onglet d'un devis montrerait les règlements de la facture liée mais pas
+		// les tentatives CB de cette même facture.
+		$cycle = !empty($parameters['cycle']) ? $parameters['cycle'] : array(array('type' => $objecttype, 'id' => $id));
+
+		$transactions = array();
+		$seen = array();
+		foreach ($cycle as $o) {
+			foreach (mmi_etransactions::object_transactions($o['type'], $o['id']) as $t) {
+				if (isset($seen[$t->return_id]))
+					continue;	// une transaction remonte par chaque document du cycle
+				$seen[$t->return_id] = true;
+				$transactions[] = $t;
+			}
+		}
 		if (empty($transactions))
 			return 0;
 
