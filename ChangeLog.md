@@ -16,6 +16,7 @@ Les transactions eTransactions se greffent sur l'onglet « Paiements » de mmipa
 - Hook `doPaymentTabAction` : l'action « Recréer le paiement » est portée depuis l'onglet (POST + jeton CSRF, contrôle de droits, confirmation, redirection anti-repost).
 - `mmi_etransactions::object_transactions($objecttype, $id)` généralise `client_transactions()` (conservé comme raccourci) : les transactions sont désormais consultables au niveau du devis, de la commande et de la facture, plus seulement du tiers.
 - Suppression de `societe_etransactions.php`, remplacée par l'onglet ; le lien « voir tout l'historique » du bloc de l'onglet Client y renvoie.
+- Hook `addGlobalPaymentRows` (contexte `mmipaymentslist`) : alimente la vue « Paiements à recréer » de la liste globale de mmipayments (RM2805) — les transactions abouties dont le paiement Dolibarr n'existe pas (ou plus), **tous tiers confondus**. Nouveau DAO `mmi_etransactions::missing_payments($filters)`. Jusqu'ici cette question n'avait aucune réponse : il fallait ouvrir les fiches une par une.
 
 ## 1.1.0
 

@@ -55,7 +55,7 @@ class modMBIETransactions extends DolibarrModules
 			'theme' => 0,
 			'css' => array(),
 			'js' => array(),
-			'hooks' => array('invoicecard', 'ordercard', 'propalcard', 'newpayment', 'thirdpartycomm', 'mmipaymentstab'),
+			'hooks' => array('invoicecard', 'ordercard', 'propalcard', 'newpayment', 'thirdpartycomm', 'mmipaymentstab', 'mmipaymentslist'),
 			'moduleforexternal' => 0,
 		);
 		$this->dirs = array("/mbietransactions/temp");

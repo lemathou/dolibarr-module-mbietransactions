@@ -105,6 +105,62 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 	}
 
 	/**
+	 * Hook de la liste globale de mmipayments (contexte mmipaymentslist), mode
+	 * « Paiements à recréer » : contribue les transactions abouties dont le paiement
+	 * Dolibarr n'existe pas (ou plus), tous tiers confondus.
+	 */
+	function addGlobalPaymentRows($parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs;
+
+		if (!$this->in_context($parameters, 'mmipaymentslist'))
+			return 0;
+
+		$filters = !empty($parameters['filters']) ? $parameters['filters'] : array();
+		if (empty($filters['missing_payment']))
+			return 0;	// l'autre mode ne nous concerne pas
+
+		$langs->loadLangs(array('mbietransactions@mbietransactions', 'compta', 'bills', 'other'));
+
+		// On ne plafonne pas ici : c'est l'appelant qui décide, et qui AFFICHE le
+		// plafond. Un tronquage muet ferait passer une liste partielle pour complète.
+		$transactions = mmi_etransactions::missing_payments(array(
+			'socid'    => !empty($filters['socid']) ? $filters['socid'] : 0,
+			'datefrom' => !empty($filters['datefrom']) ? $filters['datefrom'] : '',
+			'dateto'   => !empty($filters['dateto']) ? $filters['dateto'] : '',
+		));
+		if (empty($transactions))
+			return 0;
+
+		$rows = array();
+		foreach ($transactions as $t) {
+			$is_multiple = (!empty($t->cb_multiple) && (int) $t->cb_multiple > 1);
+			$soc = '';
+			if (!empty($t->socid)) {
+				$soc = '<a href="'.DOL_URL_ROOT.'/societe/card.php?socid='.$t->socid.'">'
+					.dol_escape_htmltag($t->soc_name ? $t->soc_name : '#'.$t->socid).'</a>';
+			}
+			$rows[] = array(
+				'date'       => $this->db->jdate($t->return_date),
+				'amount'     => $t->mt / 100,
+				'ref'        => dol_escape_htmltag($langs->trans('MBIETransactionsTransRef').' '.$t->trans),
+				'thirdparty' => $soc,
+				'objects'    => $this->render_transaction_object($t),
+				'mode'       => $langs->trans('MBIETransactionsPaymentMeans')
+					.($is_multiple ? ' <span class="badge badge-status4 badge-status">'.((int) $t->cb_multiple).'X</span>' : ''),
+				'status'     => '<span class="badge badge-status1 badge-status" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsPaymentMissing')).'">'
+					.img_warning('').' '.$langs->trans('MBIETransactionsStatusOk').'</span>',
+				'actions'    => '',
+				'is_payment' => false,
+			);
+		}
+
+		$this->results = array('payment_rows' => $rows);
+
+		return 0;
+	}
+
+	/**
 	 * Traite l'action de recréation déclenchée depuis l'onglet « Paiements »
 	 * (hook doPaymentTabAction, contexte mmipaymentstab).
 	 *

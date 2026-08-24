@@ -212,6 +212,63 @@ public static function object_transactions($objecttype, $id)
 }
 
 /**
+ * Transactions abouties dont le paiement Dolibarr n'existe pas (ou plus), TOUS TIERS
+ * CONFONDUS — les régularisations à faire.
+ *
+ * Cette question n'a aucune réponse ailleurs : une transaction sans paiement n'est
+ * par définition pas dans llx_paiement, et rien ne la remonte au niveau du parc. Il
+ * fallait ouvrir les fiches une par une.
+ *
+ * @param array $filters 'socid', 'datefrom', 'dateto', 'limit' (0 = pas de limite)
+ * @return array         Transactions, du plus récent au plus ancien, avec le tiers porteur
+ */
+public static function missing_payments($filters = array())
+{
+	global $db;
+
+	$filters += array('socid' => 0, 'datefrom' => '', 'dateto' => '', 'limit' => 0);
+
+	$where = "mr.erreur = '00000' AND pa.rowid IS NULL";
+	if (!empty($filters['socid'])) {
+		$where .= " AND COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc) = ".(int) $filters['socid'];
+	}
+	if (!empty($filters['datefrom'])) {
+		$where .= " AND mr.tms >= '".$db->idate($filters['datefrom'])."'";
+	}
+	if (!empty($filters['dateto'])) {
+		$where .= " AND mr.tms <= '".$db->idate($filters['dateto'])."'";
+	}
+
+	$sql = "SELECT mr.rowid AS return_id, mr.tms AS return_date, mr.mt, mr.erreur, mr.trans,
+			mh.objecttype, mh.fk_object, mh.multiple AS cb_multiple,
+			COALESCE(f.ref, c.ref, pr.ref) AS object_ref,
+			COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc) AS socid,
+			s.nom AS soc_name
+		FROM ".MAIN_DB_PREFIX."mbi_etransactions_return mr
+		INNER JOIN ".MAIN_DB_PREFIX."mbi_etransactions_hash mh ON mh.rowid = mr.fk_mbi_etransactions
+		LEFT JOIN ".MAIN_DB_PREFIX."facture f ON mh.objecttype = 'Facture' AND f.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."commande c ON mh.objecttype = 'Commande' AND c.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."propal pr ON mh.objecttype = 'Propal' AND pr.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."paiement pa ON pa.rowid = mr.fk_paiement
+		LEFT JOIN ".MAIN_DB_PREFIX."societe s ON s.rowid = COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc)
+		WHERE ".$where."
+		ORDER BY mr.tms DESC, mr.rowid DESC";
+	if (!empty($filters['limit'])) {
+		$sql .= $db->plimit((int) $filters['limit'], 0);
+	}
+
+	$resql = $db->query($sql);
+	if (!$resql)
+		return [];
+
+	$l = [];
+	while ($obj = $db->fetch_object($resql))
+		$l[] = $obj;
+
+	return $l;
+}
+
+/**
  * Recrée le paiement Dolibarr associé à une transaction eTransactions réussie dont le paiement
  * a été supprimé (ou n'a jamais été créé). Rejoue la logique de retour.php (mode de règlement
  * CBI / CBIxX, compte bancaire, montant) puis relie le nouveau paiement à la transaction.
