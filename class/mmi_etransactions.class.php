@@ -139,20 +139,53 @@ public static function createhash()
 }
 
 /**
- * Liste de toutes les transactions eTransactions (réussites et échecs) rattachées à un client,
- * en remontant l'objet métier (Facture/Commande/Propal/Client) via la table hash et le paiement
- * Dolibarr lié (s'il existe encore).
+ * Liste de toutes les transactions eTransactions (réussites et échecs) rattachées à un client.
+ *
+ * Raccourci conservé pour les appelants historiques ; cf. object_transactions().
  *
  * @param int $socid Identifiant du tiers (llx_societe.rowid)
  * @return array      Liste d'objets transaction, triés du plus récent au plus ancien
  */
 public static function client_transactions($socid)
 {
+	return static::object_transactions('Client', $socid);
+}
+
+/**
+ * Liste de toutes les transactions eTransactions (réussites et échecs) rattachées à un objet
+ * métier, en remontant l'objet via la table hash et le paiement Dolibarr lié (s'il existe encore).
+ *
+ * Pour un tiers, on remonte ses factures, commandes et devis ; pour un objet précis, on filtre
+ * directement sur le couple (objecttype, fk_object) de la table hash.
+ *
+ * @param string $objecttype 'Client' | 'Facture' | 'Commande' | 'Propal'
+ * @param int    $id         Identifiant de l'objet
+ * @return array             Liste d'objets transaction, triés du plus récent au plus ancien
+ */
+public static function object_transactions($objecttype, $id)
+{
 	global $db;
 
-	$socid = (int) $socid;
-	if (empty($socid))
+	$id = (int) $id;
+	if (empty($id))
 		return [];
+
+	switch ($objecttype) {
+		case 'Client':
+		case 'Societe':
+			$where = "(mh.objecttype = 'Facture' AND f.fk_soc = ".$id.")
+			OR (mh.objecttype = 'Commande' AND c.fk_soc = ".$id.")
+			OR (mh.objecttype = 'Propal' AND pr.fk_soc = ".$id.")
+			OR (mh.objecttype = 'Client' AND mh.fk_object = ".$id.")";
+			break;
+		case 'Facture':
+		case 'Commande':
+		case 'Propal':
+			$where = "mh.objecttype = '".$db->escape($objecttype)."' AND mh.fk_object = ".$id;
+			break;
+		default:
+			return [];
+	}
 
 	$sql = "SELECT mr.rowid AS return_id, mr.tms AS return_date, mr.mt, mr.auto, mr.erreur, mr.trans, mr.fk_paiement,
 			mh.rowid AS hash_id, mh.objecttype, mh.fk_object, mh.amount AS cb_amount, mh.multiple AS cb_multiple, mh.hash,
@@ -164,12 +197,66 @@ public static function client_transactions($socid)
 		LEFT JOIN ".MAIN_DB_PREFIX."commande c ON mh.objecttype = 'Commande' AND c.rowid = mh.fk_object
 		LEFT JOIN ".MAIN_DB_PREFIX."propal pr ON mh.objecttype = 'Propal' AND pr.rowid = mh.fk_object
 		LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.rowid = mr.fk_paiement
-		WHERE (mh.objecttype = 'Facture' AND f.fk_soc = ".$socid.")
-			OR (mh.objecttype = 'Commande' AND c.fk_soc = ".$socid.")
-			OR (mh.objecttype = 'Propal' AND pr.fk_soc = ".$socid.")
-			OR (mh.objecttype = 'Client' AND mh.fk_object = ".$socid.")
+		WHERE ".$where."
 		ORDER BY mr.tms DESC, mr.rowid DESC";
 	//echo $sql;
+	$resql = $db->query($sql);
+	if (!$resql)
+		return [];
+
+	$l = [];
+	while ($obj = $db->fetch_object($resql))
+		$l[] = $obj;
+
+	return $l;
+}
+
+/**
+ * Transactions abouties dont le paiement Dolibarr n'existe pas (ou plus), TOUS TIERS
+ * CONFONDUS — les régularisations à faire.
+ *
+ * Cette question n'a aucune réponse ailleurs : une transaction sans paiement n'est
+ * par définition pas dans llx_paiement, et rien ne la remonte au niveau du parc. Il
+ * fallait ouvrir les fiches une par une.
+ *
+ * @param array $filters 'socid', 'datefrom', 'dateto', 'limit' (0 = pas de limite)
+ * @return array         Transactions, du plus récent au plus ancien, avec le tiers porteur
+ */
+public static function missing_payments($filters = array())
+{
+	global $db;
+
+	$filters += array('socid' => 0, 'datefrom' => '', 'dateto' => '', 'limit' => 0);
+
+	$where = "mr.erreur = '00000' AND pa.rowid IS NULL";
+	if (!empty($filters['socid'])) {
+		$where .= " AND COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc) = ".(int) $filters['socid'];
+	}
+	if (!empty($filters['datefrom'])) {
+		$where .= " AND mr.tms >= '".$db->idate($filters['datefrom'])."'";
+	}
+	if (!empty($filters['dateto'])) {
+		$where .= " AND mr.tms <= '".$db->idate($filters['dateto'])."'";
+	}
+
+	$sql = "SELECT mr.rowid AS return_id, mr.tms AS return_date, mr.mt, mr.erreur, mr.trans,
+			mh.objecttype, mh.fk_object, mh.multiple AS cb_multiple,
+			COALESCE(f.ref, c.ref, pr.ref) AS object_ref,
+			COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc) AS socid,
+			s.nom AS soc_name
+		FROM ".MAIN_DB_PREFIX."mbi_etransactions_return mr
+		INNER JOIN ".MAIN_DB_PREFIX."mbi_etransactions_hash mh ON mh.rowid = mr.fk_mbi_etransactions
+		LEFT JOIN ".MAIN_DB_PREFIX."facture f ON mh.objecttype = 'Facture' AND f.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."commande c ON mh.objecttype = 'Commande' AND c.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."propal pr ON mh.objecttype = 'Propal' AND pr.rowid = mh.fk_object
+		LEFT JOIN ".MAIN_DB_PREFIX."paiement pa ON pa.rowid = mr.fk_paiement
+		LEFT JOIN ".MAIN_DB_PREFIX."societe s ON s.rowid = COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc)
+		WHERE ".$where."
+		ORDER BY mr.tms DESC, mr.rowid DESC";
+	if (!empty($filters['limit'])) {
+		$sql .= $db->plimit((int) $filters['limit'], 0);
+	}
+
 	$resql = $db->query($sql);
 	if (!$resql)
 		return [];
