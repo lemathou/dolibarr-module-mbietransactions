@@ -8,6 +8,10 @@ Initial version
 
 Fix : remove bad chars in ref
 
+## 1.2.1
+
+- Le greffon suit le **cycle** devis / commande / facture transmis par le socle (RM2803) : les tentatives eTransactions de la facture liée apparaissent sur l'onglet du devis, et réciproquement. Sans cela l'onglet était incohérent — il montrait les règlements de la facture liée, mais pas les tentatives CB de cette même facture. Une transaction remontant par plusieurs documents du cycle n'est comptée qu'une fois.
+
 ## 1.2.0
 
 Les transactions eTransactions se greffent sur l'onglet « Paiements » de mmipayments (RM2803/RM2804), au lieu de vivre dans une vue à part.
