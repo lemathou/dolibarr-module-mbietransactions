@@ -123,3 +123,4 @@ MBIETransactionsRecapMissing = %s Dolibarr payment(s) to recreate
 MBIETransactionsDoPayment = Payer par Carte
 MBIETransactionsDoPaymentAcompte = Acompte %s par Carte
 MBIETransactionsDoPaymentMultiple = Solde par Carte en %s fois
+MBIETransactionsPaymentMeans = eTransactions card

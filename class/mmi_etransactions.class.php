@@ -139,20 +139,53 @@ public static function createhash()
 }
 
 /**
- * Liste de toutes les transactions eTransactions (réussites et échecs) rattachées à un client,
- * en remontant l'objet métier (Facture/Commande/Propal/Client) via la table hash et le paiement
- * Dolibarr lié (s'il existe encore).
+ * Liste de toutes les transactions eTransactions (réussites et échecs) rattachées à un client.
+ *
+ * Raccourci conservé pour les appelants historiques ; cf. object_transactions().
  *
  * @param int $socid Identifiant du tiers (llx_societe.rowid)
  * @return array      Liste d'objets transaction, triés du plus récent au plus ancien
  */
 public static function client_transactions($socid)
 {
+	return static::object_transactions('Client', $socid);
+}
+
+/**
+ * Liste de toutes les transactions eTransactions (réussites et échecs) rattachées à un objet
+ * métier, en remontant l'objet via la table hash et le paiement Dolibarr lié (s'il existe encore).
+ *
+ * Pour un tiers, on remonte ses factures, commandes et devis ; pour un objet précis, on filtre
+ * directement sur le couple (objecttype, fk_object) de la table hash.
+ *
+ * @param string $objecttype 'Client' | 'Facture' | 'Commande' | 'Propal'
+ * @param int    $id         Identifiant de l'objet
+ * @return array             Liste d'objets transaction, triés du plus récent au plus ancien
+ */
+public static function object_transactions($objecttype, $id)
+{
 	global $db;
 
-	$socid = (int) $socid;
-	if (empty($socid))
+	$id = (int) $id;
+	if (empty($id))
 		return [];
+
+	switch ($objecttype) {
+		case 'Client':
+		case 'Societe':
+			$where = "(mh.objecttype = 'Facture' AND f.fk_soc = ".$id.")
+			OR (mh.objecttype = 'Commande' AND c.fk_soc = ".$id.")
+			OR (mh.objecttype = 'Propal' AND pr.fk_soc = ".$id.")
+			OR (mh.objecttype = 'Client' AND mh.fk_object = ".$id.")";
+			break;
+		case 'Facture':
+		case 'Commande':
+		case 'Propal':
+			$where = "mh.objecttype = '".$db->escape($objecttype)."' AND mh.fk_object = ".$id;
+			break;
+		default:
+			return [];
+	}
 
 	$sql = "SELECT mr.rowid AS return_id, mr.tms AS return_date, mr.mt, mr.auto, mr.erreur, mr.trans, mr.fk_paiement,
 			mh.rowid AS hash_id, mh.objecttype, mh.fk_object, mh.amount AS cb_amount, mh.multiple AS cb_multiple, mh.hash,
@@ -164,10 +197,7 @@ public static function client_transactions($socid)
 		LEFT JOIN ".MAIN_DB_PREFIX."commande c ON mh.objecttype = 'Commande' AND c.rowid = mh.fk_object
 		LEFT JOIN ".MAIN_DB_PREFIX."propal pr ON mh.objecttype = 'Propal' AND pr.rowid = mh.fk_object
 		LEFT JOIN ".MAIN_DB_PREFIX."paiement p ON p.rowid = mr.fk_paiement
-		WHERE (mh.objecttype = 'Facture' AND f.fk_soc = ".$socid.")
-			OR (mh.objecttype = 'Commande' AND c.fk_soc = ".$socid.")
-			OR (mh.objecttype = 'Propal' AND pr.fk_soc = ".$socid.")
-			OR (mh.objecttype = 'Client' AND mh.fk_object = ".$socid.")
+		WHERE ".$where."
 		ORDER BY mr.tms DESC, mr.rowid DESC";
 	//echo $sql;
 	$resql = $db->query($sql);

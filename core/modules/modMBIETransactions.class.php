@@ -40,7 +40,7 @@ class modMBIETransactions extends DolibarrModules
 		$this->descriptionlong = "MBIETransactions description (Long)";
 		$this->editor_name = 'Mathieu Moulin iProspective';
 		$this->editor_url = 'https://iprospective.fr';
-		$this->version = '1.1.0';
+		$this->version = '1.2.0';
 
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->picto = 'logo@mbietransactions';
@@ -55,7 +55,7 @@ class modMBIETransactions extends DolibarrModules
 			'theme' => 0,
 			'css' => array(),
 			'js' => array(),
-			'hooks' => array('invoicecard', 'ordercard', 'propalcard', 'newpayment', 'thirdpartycomm'),
+			'hooks' => array('invoicecard', 'ordercard', 'propalcard', 'newpayment', 'thirdpartycomm', 'mmipaymentstab'),
 			'moduleforexternal' => 0,
 		);
 		$this->dirs = array("/mbietransactions/temp");

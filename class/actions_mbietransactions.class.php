@@ -17,6 +17,146 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 	public $priority = 60;
 
 	/**
+	 * Hook de l'onglet « Paiements » de mmipayments (contexte mmipaymentstab) :
+	 * contribue les transactions eTransactions de l'objet affiché.
+	 *
+	 * Ce que le socle ne peut pas voir : llx_paiement ne contient que les paiements
+	 * aboutis. Les REFUS, les échéanciers 3x et les motifs de rejet ne vivent que
+	 * dans les tables du module. C'est tout l'objet de ce greffon.
+	 *
+	 * Deux cas de figure par transaction :
+	 *  - elle a un paiement Dolibarr vivant  -> on ENRICHIT la ligne du socle
+	 *    (fk_paiement), pour ne pas la faire apparaître deux fois ;
+	 *  - échec, ou réussite dont le paiement a été supprimé -> ligne à part entière,
+	 *    marquée comme non-encaissement, avec l'action de recréation le cas échéant.
+	 */
+	function addPaymentRows($parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs, $user;
+
+		if (!$this->in_context($parameters, 'mmipaymentstab'))
+			return 0;
+
+		$objecttype = !empty($parameters['objecttype']) ? $parameters['objecttype'] : '';
+		$id = !empty($parameters['id']) ? (int) $parameters['id'] : 0;
+		if (empty($objecttype) || empty($id))
+			return 0;
+
+		$langs->loadLangs(array('mbietransactions@mbietransactions', 'compta', 'bills', 'other'));
+
+		$transactions = mmi_etransactions::object_transactions($objecttype, $id);
+		if (empty($transactions))
+			return 0;
+
+		$can_recreate = $user->hasRight('facture', 'creer') || $user->hasRight('commande', 'creer');
+		$rows = array();
+
+		foreach ($transactions as $t) {
+			$is_ok = ($t->erreur === '00000');
+			$is_multiple = (!empty($t->cb_multiple) && (int) $t->cb_multiple > 1);
+			$mode = $langs->trans('MBIETransactionsPaymentMeans')
+				.($is_multiple ? ' <span class="badge badge-status4 badge-status" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsPaymentMultiple')).'">'.((int) $t->cb_multiple).'X</span>' : '');
+
+			// Transaction aboutie et paiement toujours présent : le socle l'a déjà
+			// listée comme règlement — on ne fait que la préciser.
+			if ($is_ok && !empty($t->paiement_id)) {
+				$rows[] = array(
+					'fk_paiement' => (int) $t->paiement_id,
+					'mode'        => $mode,
+					'status'      => '<span class="badge badge-status4 badge-status">'.$langs->trans('MBIETransactionsStatusOk').'</span>',
+				);
+				continue;
+			}
+
+			$status = $is_ok
+				? '<span class="badge badge-status1 badge-status" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsPaymentMissing')).'">'
+					.img_warning('').' '.$langs->trans('MBIETransactionsStatusOk').'</span>'
+				: '<span class="badge badge-status8 badge-status" title="'.dol_escape_htmltag(mmi_etransactions::error($t->erreur)).'">'
+					.$langs->trans('MBIETransactionsStatusKo').'</span>';
+
+			// Réussite dont le paiement Dolibarr a disparu : c'est le cas que l'action
+			// de recréation existe pour traiter.
+			$actions = '';
+			if ($is_ok && $can_recreate) {
+				$actions = '<form method="POST" action="'.$_SERVER['PHP_SELF'].'?objecttype='.urlencode($objecttype).'&id='.$id.'" style="display:inline;"'
+					.' onsubmit="return confirm(\''.dol_escape_js($langs->trans('MBIETransactionsConfirmRecreate')).'\');">'
+					.'<input type="hidden" name="token" value="'.newToken().'">'
+					.'<input type="hidden" name="action" value="mbietransactions_recreate">'
+					.'<input type="hidden" name="return_id" value="'.((int) $t->return_id).'">'
+					.'<button type="submit" class="button smallpaddingimp">'.$langs->trans('MBIETransactionsRecreatePayment').'</button>'
+					.'</form>';
+			}
+
+			$rows[] = array(
+				'date'       => $this->db->jdate($t->return_date),
+				'amount'     => $t->mt / 100,
+				'ref'        => dol_escape_htmltag($langs->trans('MBIETransactionsTransRef').' '.$t->trans),
+				'objects'    => $this->render_transaction_object($t),
+				'mode'       => $mode,
+				'status'     => $status,
+				'actions'    => $actions,
+				'is_payment' => false,
+			);
+		}
+
+		$this->results = array('payment_rows' => $rows);
+
+		return 0;
+	}
+
+	/**
+	 * Traite l'action de recréation déclenchée depuis l'onglet « Paiements »
+	 * (hook doPaymentTabAction, contexte mmipaymentstab).
+	 *
+	 * @return int 1 si l'action a été traitée (la page redirige alors en GET), 0 sinon
+	 */
+	function doPaymentTabAction($parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs, $user;
+
+		if (!$this->in_context($parameters, 'mmipaymentstab'))
+			return 0;
+		if ($action !== 'mbietransactions_recreate')
+			return 0;
+
+		$langs->loadLangs(array('mbietransactions@mbietransactions'));
+
+		if (!$user->hasRight('facture', 'creer') && !$user->hasRight('commande', 'creer')) {
+			accessforbidden('Droit de création de paiement requis');
+		}
+		// Le contrôle du jeton CSRF est assuré automatiquement par main.inc.php (POST + token)
+
+		$return_id = GETPOSTINT('return_id');
+		if (empty($return_id))
+			return 0;
+
+		$res = mmi_etransactions::recreate_payment($return_id);
+		if (!empty($res['success'])) {
+			setEventMessages($langs->trans('MBIETransactionsPaymentRecreated', $res['paiement_id']), null, 'mesgs');
+		} else {
+			setEventMessages(!empty($res['error']) ? $res['error'] : $langs->trans('MBIETransactionsPaymentRecreateError'), null, 'errors');
+		}
+
+		return 1;
+	}
+
+	/**
+	 * Lien vers l'objet métier porteur d'une transaction.
+	 */
+	protected function render_transaction_object($t)
+	{
+		$url = '';
+		if ($t->objecttype == 'Facture')
+			$url = DOL_URL_ROOT.'/compta/facture/card.php?id='.$t->fk_object;
+		elseif ($t->objecttype == 'Commande')
+			$url = DOL_URL_ROOT.'/commande/card.php?id='.$t->fk_object;
+		elseif ($t->objecttype == 'Propal')
+			$url = DOL_URL_ROOT.'/comm/propal/card.php?id='.$t->fk_object;
+		$label = dol_escape_htmltag($t->object_ref ? $t->object_ref : $t->objecttype.' #'.$t->fk_object);
+		return $url ? '<a href="'.$url.'">'.$label.'</a>' : $label;
+	}
+
+	/**
 	 * Hook onglet Client (comm/card.php, contexte thirdpartycomm) :
 	 * bloc teaser de l'historique eTransactions du tiers (réussites et échecs),
 	 * avec alerte « paiements à recréer » et lien vers la page dédiée complète
@@ -44,7 +184,9 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 				$nb_missing++;
 		}
 
-		$pageurl = dol_buildpath('/mbietransactions/societe_etransactions.php', 1).'?socid='.$object->id;
+		// L'historique complet vit désormais dans l'onglet « Paiements » de mmipayments,
+		// qui agrège règlements et tentatives de tous les moyens de paiement (RM2803).
+		$pageurl = dol_buildpath('/mmipayments/payments.php', 1).'?objecttype=Client&id='.$object->id;
 		$max = 5;
 
 		$out = '';
