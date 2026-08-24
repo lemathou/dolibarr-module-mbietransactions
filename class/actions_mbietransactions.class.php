@@ -11,6 +11,109 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 {
 	const MOD_NAME = 'mbietransactions';
 
+	// Rang d'exécution des hooks (défaut Dolibarr : 50 ; plus grand = exécuté plus tard).
+	// 60 place le bloc eTransactions SOUS le bloc « Derniers règlements » de mmipayments,
+	// dont il est le complément (échecs, paiements à recréer, 3x).
+	public $priority = 60;
+
+	/**
+	 * Hook onglet Client (comm/card.php, contexte thirdpartycomm) :
+	 * bloc teaser de l'historique eTransactions du tiers (réussites et échecs),
+	 * avec alerte « paiements à recréer » et lien vers la page dédiée complète
+	 * (societe_etransactions.php) qui porte l'action de recréation.
+	 */
+	function addMoreRecentObjects($parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs, $conf, $user;
+
+		if (!$this->in_context($parameters, 'thirdpartycomm'))
+			return 0;
+		if (empty($object->id) || !$user->hasRight('societe', 'lire'))
+			return 0;
+
+		$langs->loadLangs(array('mbietransactions@mbietransactions', 'compta', 'bills', 'other'));
+
+		$transactions = mmi_etransactions::client_transactions($object->id);
+		// Tiers sans transaction eTransactions : on n'affiche rien
+		if (empty($transactions))
+			return 0;
+
+		$nb_missing = 0;
+		foreach ($transactions as $t) {
+			if ($t->erreur === '00000' && empty($t->paiement_id))
+				$nb_missing++;
+		}
+
+		$pageurl = dol_buildpath('/mbietransactions/societe_etransactions.php', 1).'?socid='.$object->id;
+		$max = 5;
+
+		$out = '';
+		$out .= '<div class="div-table-responsive-no-min">';
+		$out .= '<table class="noborder centpercent">';
+
+		$out .= '<tr class="liste_titre">';
+		$out .= '<td colspan="4">'.$langs->trans('MBIETransactionsRecentTitle');
+		$out .= ' <a href="'.$pageurl.'" class="marginleftonly">'.$langs->trans('MBIETransactionsSeeAll').'</a>';
+		if ($nb_missing > 0) {
+			$out .= ' <a href="'.$pageurl.'" class="badge badge-status8 badge-status marginleftonly" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsRecapMissing', $nb_missing)).'">'.img_warning('').' '.$langs->trans('MBIETransactionsRecapMissing', $nb_missing).'</a>';
+		}
+		$out .= '</td>';
+		$out .= '</tr>';
+
+		$out .= '<tr class="liste_titre">';
+		$out .= '<th>'.$langs->trans('Date').'</th>';
+		$out .= '<th>'.$langs->trans('LinkedObject').'</th>';
+		$out .= '<th class="center">'.$langs->trans('Status').'</th>';
+		$out .= '<th class="right">'.$langs->trans('Amount').'</th>';
+		$out .= '</tr>';
+
+		$i = 0;
+		foreach ($transactions as $t) {
+			if ($i++ >= $max)
+				break;
+			$is_ok = ($t->erreur === '00000');
+			$is_missing = ($is_ok && empty($t->paiement_id));
+			$is_multiple = (!empty($t->cb_multiple) && (int) $t->cb_multiple > 1);
+			// « Réussite normale » (succès, paiement présent, non multi-échéances) :
+			// déjà visible dans le bloc « Derniers règlements » -> on l'atténue ici
+			// pour mettre en avant ce qui est propre à eTransactions (échecs, à recréer, 3x).
+			$is_normal = ($is_ok && !$is_missing && !$is_multiple);
+
+			$url = '';
+			if ($t->objecttype == 'Facture')
+				$url = DOL_URL_ROOT.'/compta/facture/card.php?id='.$t->fk_object;
+			elseif ($t->objecttype == 'Commande')
+				$url = DOL_URL_ROOT.'/commande/card.php?id='.$t->fk_object;
+			elseif ($t->objecttype == 'Propal')
+				$url = DOL_URL_ROOT.'/comm/propal/card.php?id='.$t->fk_object;
+			$label = dol_escape_htmltag($t->object_ref ? $t->object_ref : $t->objecttype.' #'.$t->fk_object);
+			if ($is_multiple)
+				$label .= ' <span class="badge badge-status4 badge-status" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsPaymentMultiple')).'">'.((int) $t->cb_multiple).'X</span>';
+
+			$out .= '<tr class="oddeven'.($is_normal ? ' opacitymedium' : '').'">';
+			$out .= '<td class="nowraponall">'.dol_print_date($this->db->jdate($t->return_date), 'day').'</td>';
+			$out .= '<td>'.($url ? '<a href="'.$url.'">'.$label.'</a>' : $label).'</td>';
+			$out .= '<td class="center">';
+			if ($is_ok) {
+				if (empty($t->paiement_id))
+					$out .= '<span class="badge badge-status1 badge-status" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsPaymentMissing')).'">'.img_warning('').' '.$langs->trans('MBIETransactionsStatusOk').'</span>';
+				else
+					$out .= '<a href="'.DOL_URL_ROOT.'/compta/paiement/card.php?id='.$t->paiement_id.'"><span class="badge badge-status4 badge-status">'.$langs->trans('MBIETransactionsStatusOk').'</span></a>';
+			} else {
+				$out .= '<span class="badge badge-status8 badge-status" title="'.dol_escape_htmltag(mmi_etransactions::error($t->erreur)).'">'.$langs->trans('MBIETransactionsStatusKo').'</span>';
+			}
+			$out .= '</td>';
+			$out .= '<td class="right nowraponall">'.price($t->mt / 100, 0, $langs, 1, -1, -1, $conf->currency).'</td>';
+			$out .= '</tr>';
+		}
+
+		$out .= '</table>';
+		$out .= '</div>';
+
+		$this->resprints = $out;
+		return 0;
+	}
+
 	// Payment page
 
 	/**
