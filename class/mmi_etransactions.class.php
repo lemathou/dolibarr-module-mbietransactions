@@ -212,23 +212,46 @@ public static function object_transactions($objecttype, $id)
 }
 
 /**
- * Transactions abouties dont le paiement Dolibarr n'existe pas (ou plus), TOUS TIERS
- * CONFONDUS — les régularisations à faire.
+ * Tentatives de paiement eTransactions, TOUS TIERS CONFONDUS — la vue globale.
  *
- * Cette question n'a aucune réponse ailleurs : une transaction sans paiement n'est
- * par définition pas dans llx_paiement, et rien ne la remonte au niveau du parc. Il
- * fallait ouvrir les fiches une par une.
+ * Ces lignes n'ont aucune réponse ailleurs : llx_paiement ne contient que les
+ * encaissements aboutis, donc ni les refus, ni les transactions abouties dont le
+ * paiement a disparu. Il fallait ouvrir les fiches une par une.
  *
- * @param array $filters 'socid', 'datefrom', 'dateto', 'limit' (0 = pas de limite)
- * @return array         Transactions, du plus récent au plus ancien, avec le tiers porteur
+ * Le vocabulaire des statuts est défini par le socle (mmi_payments::attempt_statuses()) ;
+ * c'est ici qu'il se traduit en conditions sur nos tables :
+ *  - 'ko'        : refus
+ *  - 'missing'   : abouties dont le paiement Dolibarr manque (à recréer)
+ *  - 'ok'        : abouties, paiement présent
+ *  - 'unsettled' : les deux premières — tout ce qui ne s'est pas soldé par un
+ *                  règlement, donc tout ce que la liste des règlements ne montre pas
+ *  - 'all'       : tout
+ *
+ * La pagination est faite EN SQL : la vue globale peut porter plusieurs milliers de
+ * lignes, les charger toutes pour n'en afficher qu'une page ne tiendrait pas.
+ *
+ * @param array $filters 'status', 'socid', 'datefrom', 'dateto', 'limit' (0 = pas de limite), 'offset'
+ * @return array         array('rows' => transactions du plus récent au plus ancien, 'total' => total AVANT pagination)
  */
-public static function missing_payments($filters = array())
+public static function global_transactions($filters = array())
 {
 	global $db;
 
-	$filters += array('socid' => 0, 'datefrom' => '', 'dateto' => '', 'limit' => 0);
+	$filters += array('status' => 'unsettled', 'socid' => 0, 'datefrom' => '',
+		'dateto' => '', 'limit' => 0, 'offset' => 0);
 
-	$where = "mr.erreur = '00000' AND pa.rowid IS NULL";
+	// pa.rowid IS NULL couvre les deux façons d'être orphelin : fk_paiement jamais
+	// renseigné, et paiement supprimé depuis (le LEFT JOIN ne trouve plus rien).
+	$conds = array(
+		'ko'        => "mr.erreur <> '00000'",
+		'missing'   => "mr.erreur = '00000' AND pa.rowid IS NULL",
+		'ok'        => "mr.erreur = '00000' AND pa.rowid IS NOT NULL",
+		'unsettled' => "(mr.erreur <> '00000' OR pa.rowid IS NULL)",
+		'all'       => '1 = 1',
+	);
+	$status = isset($conds[$filters['status']]) ? $filters['status'] : 'unsettled';
+
+	$where = $conds[$status];
 	if (!empty($filters['socid'])) {
 		$where .= " AND COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc) = ".(int) $filters['socid'];
 	}
@@ -239,33 +262,57 @@ public static function missing_payments($filters = array())
 		$where .= " AND mr.tms <= '".$db->idate($filters['dateto'])."'";
 	}
 
-	$sql = "SELECT mr.rowid AS return_id, mr.tms AS return_date, mr.mt, mr.erreur, mr.trans,
-			mh.objecttype, mh.fk_object, mh.multiple AS cb_multiple,
-			COALESCE(f.ref, c.ref, pr.ref) AS object_ref,
-			COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc) AS socid,
-			s.nom AS soc_name
-		FROM ".MAIN_DB_PREFIX."mbi_etransactions_return mr
+	$from = " FROM ".MAIN_DB_PREFIX."mbi_etransactions_return mr
 		INNER JOIN ".MAIN_DB_PREFIX."mbi_etransactions_hash mh ON mh.rowid = mr.fk_mbi_etransactions
 		LEFT JOIN ".MAIN_DB_PREFIX."facture f ON mh.objecttype = 'Facture' AND f.rowid = mh.fk_object
 		LEFT JOIN ".MAIN_DB_PREFIX."commande c ON mh.objecttype = 'Commande' AND c.rowid = mh.fk_object
 		LEFT JOIN ".MAIN_DB_PREFIX."propal pr ON mh.objecttype = 'Propal' AND pr.rowid = mh.fk_object
 		LEFT JOIN ".MAIN_DB_PREFIX."paiement pa ON pa.rowid = mr.fk_paiement
 		LEFT JOIN ".MAIN_DB_PREFIX."societe s ON s.rowid = COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc)
-		WHERE ".$where."
-		ORDER BY mr.tms DESC, mr.rowid DESC";
+		WHERE ".$where;
+
+	$total = 0;
+	$resql = $db->query("SELECT COUNT(*) AS nb".$from);
+	if ($resql && ($o = $db->fetch_object($resql)))
+		$total = (int) $o->nb;
+
+	$sql = "SELECT mr.rowid AS return_id, mr.tms AS return_date, mr.mt, mr.erreur, mr.trans,
+			mr.fk_paiement, pa.ref AS paiement_ref,
+			mh.objecttype, mh.fk_object, mh.multiple AS cb_multiple,
+			COALESCE(f.ref, c.ref, pr.ref) AS object_ref,
+			COALESCE(f.fk_soc, c.fk_soc, pr.fk_soc) AS socid,
+			s.nom AS soc_name"
+		.$from
+		." ORDER BY mr.tms DESC, mr.rowid DESC";
 	if (!empty($filters['limit'])) {
-		$sql .= $db->plimit((int) $filters['limit'], 0);
+		$sql .= $db->plimit((int) $filters['limit'], (int) $filters['offset']);
 	}
 
 	$resql = $db->query($sql);
 	if (!$resql)
-		return [];
+		return array('rows' => array(), 'total' => 0);
 
 	$l = [];
 	while ($obj = $db->fetch_object($resql))
 		$l[] = $obj;
 
-	return $l;
+	return array('rows' => $l, 'total' => $total);
+}
+
+/**
+ * Transactions abouties dont le paiement Dolibarr n'existe pas (ou plus).
+ *
+ * Raccourci conservé pour les appelants historiques : c'est global_transactions()
+ * avec le statut 'missing'.
+ *
+ * @param array $filters 'socid', 'datefrom', 'dateto', 'limit' (0 = pas de limite)
+ * @return array         Transactions, du plus récent au plus ancien
+ */
+public static function missing_payments($filters = array())
+{
+	$filters['status'] = 'missing';
+	$res = static::global_transactions($filters);
+	return $res['rows'];
 }
 
 /**
