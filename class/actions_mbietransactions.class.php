@@ -119,9 +119,16 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 	}
 
 	/**
-	 * Hook de la liste globale de mmipayments (contexte mmipaymentslist), mode
-	 * « Paiements à recréer » : contribue les transactions abouties dont le paiement
-	 * Dolibarr n'existe pas (ou plus), tous tiers confondus.
+	 * Hook de la liste globale de mmipayments (contexte mmipaymentslist) : contribue
+	 * les tentatives de paiement CB, tous tiers confondus, selon le statut demandé.
+	 *
+	 * Le socle n'a rien à mettre dans cette vue — llx_paiement ne contient que les
+	 * encaissements aboutis, donc ni les refus, ni les transactions dont le paiement
+	 * a disparu. Nous sommes seuls à savoir.
+	 *
+	 * La pagination est faite en SQL et rendue au socle via `payment_total` : la vue
+	 * porte plusieurs milliers de lignes, en charger l'intégralité pour n'en afficher
+	 * qu'une page ne tiendrait pas.
 	 */
 	function addGlobalPaymentRows($parameters, &$object, &$action, $hookmanager)
 	{
@@ -131,29 +138,55 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 			return 0;
 
 		$filters = !empty($parameters['filters']) ? $parameters['filters'] : array();
-		if (empty($filters['missing_payment']))
+		if (empty($filters['mode']) || $filters['mode'] !== 'attempts')
 			return 0;	// l'autre mode ne nous concerne pas
+
+		// Compat : socle au contrat 1.4, qui ne connaît que le drapeau missing_payment.
+		$status = !empty($filters['status'])
+			? $filters['status']
+			: (!empty($filters['missing_payment']) ? 'missing' : 'unsettled');
 
 		$langs->loadLangs(array('mbietransactions@mbietransactions', 'compta', 'bills', 'other'));
 
-		// On ne plafonne pas ici : c'est l'appelant qui décide, et qui AFFICHE le
-		// plafond. Un tronquage muet ferait passer une liste partielle pour complète.
-		$transactions = mmi_etransactions::missing_payments(array(
+		$res = mmi_etransactions::global_transactions(array(
+			'status'   => $status,
 			'socid'    => !empty($filters['socid']) ? $filters['socid'] : 0,
 			'datefrom' => !empty($filters['datefrom']) ? $filters['datefrom'] : '',
 			'dateto'   => !empty($filters['dateto']) ? $filters['dateto'] : '',
+			'limit'    => !empty($filters['limit']) ? $filters['limit'] : 0,
+			'offset'   => !empty($filters['offset']) ? $filters['offset'] : 0,
 		));
-		if (empty($transactions))
+		if (empty($res['total']))
 			return 0;
 
+		// Une page vide au-delà de la fin n'est pas une absence de résultat : on rend
+		// le total quand même, l'appelant en a besoin pour ramener à la page 1.
 		$rows = array();
-		foreach ($transactions as $t) {
+		foreach ($res['rows'] as $t) {
+			$is_ok = ($t->erreur === '00000');
+			$has_payment = !empty($t->fk_paiement) && !empty($t->paiement_ref);
 			$is_multiple = (!empty($t->cb_multiple) && (int) $t->cb_multiple > 1);
+
 			$soc = '';
 			if (!empty($t->socid)) {
 				$soc = '<a href="'.DOL_URL_ROOT.'/societe/card.php?socid='.$t->socid.'">'
 					.dol_escape_htmltag($t->soc_name ? $t->soc_name : '#'.$t->socid).'</a>';
 			}
+
+			if (!$is_ok) {
+				$status_html = '<span class="badge badge-status8 badge-status" title="'.dol_escape_htmltag(mmi_etransactions::error($t->erreur)).'">'
+					.$langs->trans('MBIETransactionsStatusKo').'</span>';
+			} elseif (!$has_payment) {
+				// Le cas que la vue « Paiements à recréer » existe pour traiter : la
+				// régularisation se fait depuis l'onglet Paiements du document.
+				$status_html = '<span class="badge badge-status1 badge-status" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsPaymentMissing')).'">'
+					.img_warning('').' '.$langs->trans('MBIETransactionsStatusOk').'</span>';
+			} else {
+				$status_html = '<span class="badge badge-status4 badge-status">'.$langs->trans('MBIETransactionsStatusOk').'</span>'
+					.' <a href="'.DOL_URL_ROOT.'/compta/paiement/card.php?id='.((int) $t->fk_paiement).'">'
+					.img_picto('', 'payment', 'class="paddingleft"').dol_escape_htmltag($t->paiement_ref).'</a>';
+			}
+
 			$rows[] = array(
 				'date'       => $this->db->jdate($t->return_date),
 				'amount'     => $t->mt / 100,
@@ -162,14 +195,16 @@ class ActionsMBIETransactions extends MMI_Actions_1_0
 				'objects'    => $this->render_transaction_object($t),
 				'mode'       => $langs->trans('MBIETransactionsPaymentMeans')
 					.($is_multiple ? ' <span class="badge badge-status4 badge-status">'.((int) $t->cb_multiple).'X</span>' : ''),
-				'status'     => '<span class="badge badge-status1 badge-status" title="'.dol_escape_htmltag($langs->trans('MBIETransactionsPaymentMissing')).'">'
-					.img_warning('').' '.$langs->trans('MBIETransactionsStatusOk').'</span>',
+				'status'     => $status_html,
 				'actions'    => '',
 				'is_payment' => false,
 			);
 		}
 
-		$this->results = array('payment_rows' => $rows);
+		$this->results = array(
+			'payment_rows'  => $rows,
+			'payment_total' => (int) $res['total'],	// total AVANT pagination : le socle n'a rien à retrancher
+		);
 
 		return 0;
 	}

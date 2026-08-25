@@ -8,6 +8,14 @@ Initial version
 
 Fix : remove bad chars in ref
 
+## 1.3.0
+
+- Contribue les **tentatives de paiement CB** à la vue globale de mmipayments selon le statut demandé — refus, transactions abouties dont le paiement Dolibarr manque, abouties, ou tout. Le module ne remontait jusqu'ici que les régularisations à faire ; les refus n'existaient nulle part à l'échelle du parc, alors qu'ils sont de loin les plus nombreux.
+- `mmi_etransactions::global_transactions($filters)` remplace `missing_payments()`, qui devient un raccourci : mêmes filtres tiers et période, plus le statut, **paginés en SQL** avec le total avant pagination. La vue porte plusieurs milliers de lignes — les charger toutes pour n'en afficher qu'une page ne tiendrait pas.
+- Une transaction aboutie affiche un lien vers son paiement Dolibarr ; celle dont le paiement manque garde son marqueur d'alerte. La recréation, elle, reste dans l'onglet « Paiements » du document : elle a besoin du contexte de ce document.
+
+> Requiert mmipayments ≥ 1.5 pour la pagination et le filtre de statut. Avec un socle plus ancien, la vue retombe sur les seules régularisations à faire, sans erreur.
+
 ## 1.2.1
 
 - Le greffon suit le **cycle** devis / commande / facture transmis par le socle (RM2803) : les tentatives eTransactions de la facture liée apparaissent sur l'onglet du devis, et réciproquement. Sans cela l'onglet était incohérent — il montrait les règlements de la facture liée, mais pas les tentatives CB de cette même facture. Une transaction remontant par plusieurs documents du cycle n'est comptée qu'une fois.
