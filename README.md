@@ -1,4 +1,4 @@
-# MBIETransactions — Paiement Monetico (MBE) : transactions CB, retours et rapprochement.
+# MBIETransactions — MBI ETransactions (MBI + ETransactions, devenu Up2Pay) : transactions CB, retours et rapprochement.
 
 > Module Dolibarr **MBIETransactions** (version 1.3.0), branche `20.0`.
 
@@ -6,7 +6,7 @@
 
 ### Fonctionnalités principales
 
-- Paiement CB Monetico (`payment.php`) et pages de retour (`accepted.php`, `canceled.php`, `refused.php`, `retour.php`).
+- Paiement CB MBI ETransactions (`payment.php`) et pages de retour (`accepted.php`, `canceled.php`, `refused.php`, `retour.php`).
 - Journal des retours et rapprochement, triggers e-mail, hooks facture/commande/devis/paiement/tiers.
 - Onglet Paiements et liens de paiement sécurisés.
 
