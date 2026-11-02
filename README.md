@@ -1,6 +1,6 @@
 # MBIETransactions — MBI ETransactions (MBI + ETransactions, devenu Up2Pay) : transactions CB, retours et rapprochement.
 
-> Module Dolibarr **MBIETransactions** (version 1.3.0), branche `20.0`.
+> Module Dolibarr **MBIETransactions** (version 1.3.0), branche `20.0-mmi`.
 
 ## Fonctionnalités
 
@@ -73,7 +73,7 @@
 
 ## Prérequis
 
-- Dolibarr >= 8.0 (branche `20.0` : Dolibarr 20.0).
+- Dolibarr >= 8.0 (branche `20.0-mmi` : Dolibarr 20.0).
 - Modules MMI : `mmicommon`, `mmipayments`. **`mmicommon` doit être activé en premier.**
 
 ## Installation
